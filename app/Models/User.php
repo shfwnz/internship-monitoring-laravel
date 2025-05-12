@@ -63,6 +63,6 @@ class User extends Authenticatable
         if ($this->userable_type) {
             return strtolower(class_basename($this->userable_type));
         }
-        return null;
+        return 'super_admin';
     }
 }

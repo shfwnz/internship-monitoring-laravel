@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+
+// Resources
+use App\Http\Resources\IndustryResource;
+use App\Models\Industry;
 
 class IndustryController extends Controller
 {
@@ -12,7 +17,13 @@ class IndustryController extends Controller
      */
     public function index()
     {
-        //
+        $industries = Industry::all();
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'success',
+            'all_data' => IndustryResource::collection($industries),
+        ], 200);
     }
 
     /**
@@ -20,7 +31,29 @@ class IndustryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+            'business_field' => 'required|string',
+            'address' => 'required|string',
+            'phone' => 'required|unique:industries,phone|string',
+            'email' => 'required|email|unique:industries,email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data has not been created',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $industry = Industry::create($validator->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data has been created',
+            'created_data' => new IndustryResource($industry),
+        ], 201);
     }
 
     /**
@@ -28,7 +61,13 @@ class IndustryController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $industry = Industry::find($id);
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Data has been found',
+            'find_data' => new IndustryResource($industry),
+        ], 200);
     }
 
     /**
@@ -36,7 +75,31 @@ class IndustryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $industry = Industry::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+            'business_field' => 'required|string',
+            'address' => 'required|string',
+            'phone' => 'required|unique:industries,phone,' .$industry->id,
+            'email' => 'required|email|unique:industries,email,' .$industry->id,
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data has not been updated',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $industry->update($validator->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data has been updated',
+            'updated_data' => new IndustryResource($industry),
+        ], 200);
     }
 
     /**
@@ -44,6 +107,13 @@ class IndustryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $industry = Industry::find($id);
+
+        $industry->delete();
+        return response()->json([
+            'success' => true,
+            'message' => 'Data has been deleted',
+            'deleted_data' => new IndustryResource($industry),
+        ], 200);
     }
 }
