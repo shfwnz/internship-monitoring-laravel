@@ -23,6 +23,7 @@ return new class extends Migration
             // role
             $table->unsignedBigInteger('userable_id')->nullable();
             $table->string('userable_type')->nullable();
+            $table->index(['userable_id', 'userable_type']);
             
             $table->string('password');
             $table->rememberToken();

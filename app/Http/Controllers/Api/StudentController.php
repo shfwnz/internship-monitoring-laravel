@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
@@ -38,12 +39,16 @@ class StudentController extends Controller
             'nis' => 'required|string|unique:students,nis',
             
             // User
-            'name' => 'required|string',
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string',
+            'password' => 'required|string|min:8',
             'gender' => 'required|in:L,P',
-            'address' => 'required|string',
-            'phone' => 'required|string',
+            'phone' => 'required|string|unique:users,phone', 
+            'address' => 'required|string',    
+            ], [
+            'phone.unique' => 'Nomor telepon sudah digunakan oleh user lain',
+            'email.unique' => 'Email sudah digunakan',
+            'nis.unique' => 'NIS sudah terdaftar'
         ]);
 
         if ($validator->fails()) {
@@ -54,30 +59,41 @@ class StudentController extends Controller
             ], 422);
         }
 
-        $student = Student::create([
-            'nis' => request()->nis,
-            'status' => false
-        ]);
+        DB::beginTransaction();
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'gender' => $request->gender,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'userable_id' => $student->id,
-            'userable_type' => Student::class 
-        ]);
-
-
-        $student = Student::with('user')->find($student->id);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Data has been created',
-            'created_data' => new StudentResource($student->load('user')),
-        ],201);
+        try {
+            // Create Student
+            $student = Student::create([
+                'nis' => $request->nis,
+                'status' => false
+            ]);
+    
+            // Create User 
+            $user = $student->user()->create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'gender' => $request->gender,
+                'phone' => $request->phone,
+                'address' => $request->address
+            ]);
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Student created successfully',
+                'data' => new StudentResource($student->load('user'))
+            ], 201);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create student',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -85,13 +101,13 @@ class StudentController extends Controller
      */
     public function show(string $id)
     {
-        $student = Student::find($id);
+        $student = Student::with('user')->findOrFail($id);
 
         return response()->json([
             'success' => true,
-            'status' => 200,
+            'message' => 'Data has been found',
             'find_data' => new StudentResource($student),
-        ]);
+        ], 200);
     }
 
     /**
@@ -122,23 +138,33 @@ class StudentController extends Controller
             ], 422);
         }
 
-        if ($request->has('nis')) {
-            $student->update(['nis' => $request->nis]);
+        DB::beginTransaction();
+
+        try {
+            // Update Student
+            $student->update($validator->validated());
+    
+            // Update User
+            $student->user->update($request->only([
+                'name', 'email', 'password', 'gender', 'phone', 'address'
+            ]));
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Data has been updated',
+                'updated_data' => new StudentResource($student),    
+            ], 200);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update student',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $student->user->update($request->only([
-            'name', 'email', 'gender', 'phone', 'address'
-        ]));
-
-        if ($request->has('password')) {
-            $student->user->update(['password' => Hash::make($request->password)]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Data has been updated',
-            'updated_data' => new StudentResource($student),    
-        ], 200);
     }
 
     /**
@@ -146,13 +172,34 @@ class StudentController extends Controller
      */
     public function destroy(string $id)
     {
-        $student = Student::find($id);
-        $student->delete();
+        DB::beginTransaction();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Data has been deleted',
-            'deleted_data' => new StudentResource($student),
-        ], 200);
+        try {
+            $student = Student::with('user')->findOrFail($id);
+            
+            // Delete User
+            if ($student->user) {
+                $student->user->delete();
+            }
+            
+            // Then delete Student
+            $student->delete();
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Student and associated user deleted successfully',
+                'deleted_data' => new StudentResource($student)
+            ], 200);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete student',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

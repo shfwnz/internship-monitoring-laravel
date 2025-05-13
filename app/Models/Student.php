@@ -15,6 +15,7 @@ class Student extends Model
     {
         return $this->morphOne(User::class, 'userable');
     }
+
     public function pkl()
     {
         return $this->hasMany(Pkl::class);
