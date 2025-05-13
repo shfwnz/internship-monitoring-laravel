@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 // Resources
@@ -46,9 +46,9 @@ class StudentController extends Controller
             'phone' => 'required|string|unique:users,phone', 
             'address' => 'required|string',    
             ], [
-            'phone.unique' => 'Nomor telepon sudah digunakan oleh user lain',
-            'email.unique' => 'Email sudah digunakan',
-            'nis.unique' => 'NIS sudah terdaftar'
+            'phone.unique' => 'Phone number has already been registered',
+            'email.unique' => 'Email has already been registered',
+            'nis.unique' => 'NIS has already been registered',
         ]);
 
         if ($validator->fails()) {
@@ -76,7 +76,7 @@ class StudentController extends Controller
                 'gender' => $request->gender,
                 'phone' => $request->phone,
                 'address' => $request->address
-            ]);
+            ])->assignRole('student');
     
             DB::commit();
     
@@ -115,7 +115,7 @@ class StudentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $student = Student::findOrFail($id);
+        $student = Student::with('user')->findOrFail($id);
 
         $validator = Validator::make($request->all(), [
             // Student
@@ -128,6 +128,10 @@ class StudentController extends Controller
             'gender' => 'sometimes|in:L,P',
             'phone' => 'sometimes|string|unique:users,phone,'.$student->user->id,
             'address' => 'sometimes|string',
+            ], [
+            'phone.unique' => 'Phone number has already been registered',
+            'email.unique' => 'Email has already been registered',
+            'nis.unique' => 'NIS has already been registered',
         ]);
 
         if ($validator->fails()) {

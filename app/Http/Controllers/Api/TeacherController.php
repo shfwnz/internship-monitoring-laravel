@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 // Resources
@@ -24,7 +26,7 @@ class TeacherController extends Controller
             'success' => true,
             'message' => 'success',
             'all_data' => TeacherResource::collection($teachers),
-        ]);
+        ], 200);
     }
 
     /**
@@ -34,46 +36,63 @@ class TeacherController extends Controller
     {
         $validator = Validator::make(request()->all(), [
             // Teacher
-            'nip' => 'required|string',
+            'nip' => 'required|string|unique:teachers,nip',
             
             // User
-            'name' => 'required|string',
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string',
+            'password' => 'required|string|min:8',
             'gender' => 'required|in:L,P',
-            'address' => 'required|string',
-            'phone' => 'required|string',
+            'phone' => 'required|string|unique:users,phone', 
+            'address' => 'required|string',    
+            ], [
+            'phone.unique' => 'Phone number has already been registered',
+            'email.unique' => 'Email has already been registered',
+            'nip.unique' => 'NIP has already been registered',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'status' => 422,
+                'message' => 'Data has not been created',
                 'errors' => $validator->errors()
-            ]);
+            ], 422);
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'gender' => $request->gender,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'userable_type' => Teacher::class 
-        ]);
+        DB::beginTransaction();
 
-        $teacher = Teacher::create([
-            'nip' => request()->nip,
-        ]);
+        try {
+            // Create Teacher
+            $teacher = Teacher::create([
+                'nip' => $request->nip,
+            ]);
 
-        $user->update(['userable_id' => $teacher->id]);
+            // Create User
+            $user = $teacher->user()->create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'gender' => $request->gender,
+                'phone' => $request->phone,
+                'address' => $request->address,
+            ])->assignRole('teacher');
 
-        return response()->json([
-            'success' => true,
-            'status' => 200,
-            'added_data' => new TeacherResource($teacher),
-        ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data has been created',
+                'created_data' => new TeacherResource($teacher),
+            ], 200);
+        } catch (\Exception $th) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Data has not been created',
+                'errors' => $th->getMessage()
+            ], 422);
+        }
     }
 
     /**
@@ -81,13 +100,13 @@ class TeacherController extends Controller
      */
     public function show(string $id)
     {
-        $teacher = Teacher::find($id);
+        $teacher = $teacher->with('user')->findOrFail($id);
 
         return response()->json([
             'success' => true,
-            'status' => 200,
+            'message' => 'Data has been found',
             'find_data' => new TeacherResource($teacher),
-        ]);
+        ], 200);
     }
 
     /**
@@ -95,27 +114,60 @@ class TeacherController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $teacher = Teacher::with('user')->findOrFail($id);
+
         $validator = Validator::make($request->all(), [
-            'nip' => 'required|string',
+            // Teacher
+            'nip' => 'required|string|unique:teachers,nip',
+            
+            // User
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'gender' => 'required|in:L,P',
+            'phone' => 'required|string|unique:users,phone', 
+            'address' => 'required|string',    
+            ], [
+            'phone.unique' => 'Phone number has already been registered',
+            'email.unique' => 'Email has already been registered',
+            'nip.unique' => 'NIP has already been registered',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'status' => 422,
+                'message' => 'Data has not been updated',
                 'errors' => $validator->errors()
-            ]);
+            ], 422);
         }
 
-        $teacher = Teacher::create([
-            'nip' => $request->nip,
-        ]);
+        DB::beginTransaction();
 
-        return response()->json([
-            'success' => true,
-            'status' => 200,
-            'updated_data' => new TeacherResource($teacher),
-        ]);
+        try {
+            // Update Teacher
+            $teacher->update($validator->validated());
+
+            // Update User
+            $teacher->user->update($request->only([
+                'name', 'email', 'password', 'gender', 'phone', 'address'
+            ]));
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data has been updated',
+                'updated_data' => new TeacherResource($teacher),
+            ], 200);
+
+        } catch (\Exception $th) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Data has not been updated',
+                'errors' => $th->getMessage()
+            ], 422);
+        }
     }
 
     /**
@@ -123,13 +175,34 @@ class TeacherController extends Controller
      */
     public function destroy(string $id)
     {
-        $teacher = Teacher::find($id);
-        $teacher->delete();
-        
-        return response()->json([
-            'success' => true,
-            'status' => 200,
-            'deleted_data' => new TeacherResource($teacher),
-        ]);
+        DB::beginTransaction();
+
+        try {
+            $teacher = Teacher::with('user')->findOrFail($id);
+            
+            // Delete User
+            if ($teacher->user) {
+                $teacher->user->delete();
+            }
+            
+            // Then delete 
+            $teacher->delete();
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Teacher and associated user deleted successfully',
+                'deleted_data' => new TeacherResource($teacher)
+            ], 200);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete student',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
