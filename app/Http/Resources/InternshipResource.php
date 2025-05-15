@@ -14,6 +14,13 @@ class InternshipResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'student' => new StudentResource($this->whenLoaded('student')),
+            'teacher' => new TeacherResource($this->whenLoaded('teacher')),
+            'industry' => new IndustryResource($this->whenLoaded('industry')),
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
+        ];
     }
 }

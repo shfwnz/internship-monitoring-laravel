@@ -17,15 +17,16 @@ class TeacherResource extends JsonResource
         return [
             'id' => $this->id,
             'nip' => $this->nip,
-            'user' => [
-                // 'id' => $this->user->id,
-                'name' => $this->user->name,
-                'email' => $this->user->email,
-                'gender' => $this->user->gender,
-                'phone' => $this->user->phone,
-                'address' => $this->user->address,
-                'role' => 'teacher'
-            ]
+            'user' => $this->whenLoaded('user', function () {
+                return $this->user ? [
+                    'name' => $this->user->name,
+                    'email' => $this->user->email,
+                    'gender' => $this->user->gender,
+                    'phone' => $this->user->phone,
+                    'address' => $this->user->address,
+                    'role' => 'teacher'
+                ] : null;
+            })
         ];
     }
 }

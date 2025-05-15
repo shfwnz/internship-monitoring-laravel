@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Internship extends Model
 {
-    protected $table = 'pkl';
-    protected $fillable = ['student_id', 'teacher_id', 'industry_id'];
+    protected $table = 'internships';
+    protected $fillable = ['student_id', 'teacher_id', 'industry_id', 'start_date', 'end_date'];
 
     public function student()
     {
