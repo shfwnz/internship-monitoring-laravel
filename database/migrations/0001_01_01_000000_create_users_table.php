@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->enum('gender', ['L', 'P']);
-            $table->string('address');
-            $table->string('phone')->unique();
+            $table->enum('gender', ['L', 'P'])->nullable();
+            $table->string('address')->nullable();
+            $table->string('phone')->nullable()->unique();
             
             // role
             $table->unsignedBigInteger('userable_id')->nullable();
