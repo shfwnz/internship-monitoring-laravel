@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 // Resources
 use App\Models\User;
 use App\Models\Student;
+use App\Models\Teacher;
 
 class AuthController extends Controller
 {
@@ -61,15 +62,19 @@ class AuthController extends Controller
 
     public function register (Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'nis' => 'required|string|unique:students,nis',
-
+       $validator = Validator::make($request->all(), [
+            'role' => 'required|in:student,teacher',
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
+            // Student
+            'nis' => 'required_if:role,student|string|unique:students,nis|nullable',
+            // Teacher
+            'nip' => 'required_if:role,teacher|string|unique:teachers,nip|nullable',
         ], [
-            'nis.unique' => 'NIS has already been registered',
-            'email.unique' => 'Email has already been registered',
+            'nis.required_if' => 'NIS required if role is student',
+            'nip.required_if' => 'NIP required if role is teacher',
+            'role.in' => 'Role must be student or teacher'
         ]);
 
         if ($validator->fails()) {
@@ -83,29 +88,46 @@ class AuthController extends Controller
         DB::beginTransaction();
 
         try {
-            $student = Student::create([
-                'nis' => $request->nis,
-                'status' => false
-            ]);
-
-            $user = $student->user()->create([
-                // 'id' => $student->id,
+            $userData = [
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'gender' => null,
                 'phone' => null,
                 'address' => null
-            ]);
+            ];
 
-            $user->assignRole('student');
+            if ($request->role === 'student') {
+                $student = Student::create([
+                    'nis' => $request->nis,
+                    'status' => false
+                ]);
+
+                $user = $student->user()->create($userData);
+                $user->assignRole('student');
+                
+                $profileId = $student->id;
+            } else {
+                $teacher = Teacher::create([
+                    'nip' => $request->nip,
+                ]);         
+                
+                $user = $teacher->user()->create($userData);
+                $user->assignRole('teacher');
+
+                $profileId = $teacher->id;
+            }
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Registered successfully',
-                'register_data' => $user
+                'register_data' => [
+                    'profile_id' => $profileId,
+                    'user_id' => $user->id,
+                    'role' => $request->role,
+                ]
             ], 201);
 
         } catch (\Exception $e) {
