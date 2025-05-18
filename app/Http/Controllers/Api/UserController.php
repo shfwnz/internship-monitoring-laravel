@@ -20,7 +20,8 @@ class UserController extends Controller
      */
     public function me(Request $request)
     {
-        $user = $request->user()->load('roles');
+        
+        $user = $request->user()->load(['roles', 'userable']);
         
         return response()->json([
             'success' => true,
