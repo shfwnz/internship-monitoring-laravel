@@ -10,7 +10,7 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::middleware('auth:api')->group(function () {
     Route::get('/me', [UserController::class, 'me']);
-    Route::get('internships/me', [InternshipController::class, 'myIndustry']);
+    Route::get('internships/me', [InternshipController::class, 'myInternship']);
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
