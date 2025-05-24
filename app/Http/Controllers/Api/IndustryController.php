@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use App\Http\Resources\IndustryResource;
 use App\Models\Industry;
 
-
 class IndustryController extends Controller
 {
     /**
@@ -18,7 +17,7 @@ class IndustryController extends Controller
      */
     public function index()
     {
-        $industries = Industry::all();
+        $industries = Industry::with('business_field')->get();
     
         return response()->json([
             'success' => true,
@@ -62,7 +61,7 @@ class IndustryController extends Controller
      */
     public function show(string $id)
     {
-        $industry = Industry::find($id);
+        $industry = Industry::with('business_field')->findOrFail($id);
     
         return response()->json([
             'success' => true,
@@ -76,7 +75,7 @@ class IndustryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $industry = Industry::findOrFail($id);
+        $industry = Industry::with('business_field')->findOrFail($id);
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
