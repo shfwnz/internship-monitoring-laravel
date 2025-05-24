@@ -11,16 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('industries', function (Blueprint $table) {
+        Schema::create('business_fields', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->unsignedBigInteger('business_field_id');
-            $table->string('address');
-            $table->string('phone')->unique();
-            $table->string('email')->unique();
             $table->timestamps();
-            
-            $table->foreign('business_field_id')->references('id')->on('business_fields')->onDelete('restrict');
         });
     }
 
@@ -29,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('industries');
+        Schema::dropIfExists('business_fields');
     }
 };

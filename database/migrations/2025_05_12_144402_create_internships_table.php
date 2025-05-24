@@ -16,12 +16,14 @@ return new class extends Migration
             $table->unsignedBigInteger('student_id');
             $table->unsignedBigInteger('teacher_id');
             $table->unsignedBigInteger('industry_id');    
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->string('image')->nullable();
+            $table->timestamps();
+
             $table->foreign('student_id')->references('id')->on('students')->onDelete('cascade');
             $table->foreign('teacher_id')->references('id')->on('teachers')->onDelete('cascade');
             $table->foreign('industry_id')->references('id')->on('industries')->onDelete('cascade');
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->timestamps();
         });
     }
 

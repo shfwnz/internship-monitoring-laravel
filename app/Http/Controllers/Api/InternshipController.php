@@ -80,12 +80,21 @@ class InternshipController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date',
         ]);
-        
+
+        $existing = Internship::where('student_id', $request->student_id);
+
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data has not been created',
                 'errors' => $validator->errors()
+            ], 422);
+        }
+
+        if ($existing->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Internship already exists for this student',
             ], 422);
         }
 

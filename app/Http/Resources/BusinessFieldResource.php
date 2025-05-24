@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class IndustryResource extends JsonResource
+class BusinessFieldResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,10 +17,6 @@ class IndustryResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'business_field' => new BusinessFieldResource($this->whenLoaded('businessField')),
-            'address' => $this->address,
-            'phone' => $this->phone,
-            'email' => $this->email
         ];
     }
 }

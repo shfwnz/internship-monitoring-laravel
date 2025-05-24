@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Http\Resources\IndustryResource;
 use App\Models\Industry;
 
+
 class IndustryController extends Controller
 {
     /**
@@ -33,7 +34,7 @@ class IndustryController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
-            'business_field' => 'required|string',
+            'business_field_id' => 'required|integer|exists:business_fields,id',
             'address' => 'required|string',
             'phone' => 'required|unique:industries,phone|string',
             'email' => 'required|email|unique:industries,email',
@@ -79,7 +80,7 @@ class IndustryController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
-            'business_field' => 'required|string',
+            'business_field_id' => 'required|integer|exists:business_fields,id',
             'address' => 'required|string',
             'phone' => 'required|unique:industries,phone,' .$industry->id,
             'email' => 'required|email|unique:industries,email,' .$industry->id,

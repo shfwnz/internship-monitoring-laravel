@@ -19,3 +19,4 @@ Route::apiResource('teachers', TeacherController::class);
 Route::apiResource('students', StudentController::class);
 Route::apiResource('industries', IndustryController::class);
 Route::apiResource('internships', InternshipController::class);
+Route::apiResource('business-fields', BusinessFieldController::class);

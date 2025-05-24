@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
         // User::factory()->count(3)->create();
 
         $this->call([
+            BusinessFieldSeeder::class,
             IndustrySeeder::class,
             TeacherSeeder::class,
             StudentSeeder::class,

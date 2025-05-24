@@ -11,7 +11,7 @@ class Industry extends Model
     protected $table = 'industries';
     protected $fillable = [
         'name',
-        'business_field',
+        'business_field_id',
         'address',
         'phone',
         'email',
@@ -20,5 +20,10 @@ class Industry extends Model
     public function pkl()
     {
         return $this->hasMany(Pkl::class);
+    }
+
+    public function business_field()
+    {
+        return $this->belongsTo(BusinessField::class);
     }
 }
