@@ -17,8 +17,8 @@ class StudentFactory extends Factory
     public function definition(): array
     {
         return [
-            'nis' => $this->faker->unique()->numerify('########'), // 8 digit
-            'status' => $this->faker->boolean(30), // 30% chance true (aktif)
+            'nis' => $this->faker->unique()->numerify('20###'), 
+            'status' => false,
         ];
     }
 }

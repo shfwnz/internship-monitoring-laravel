@@ -30,6 +30,7 @@ class UserFactory extends Factory
             'address' => $this->faker->address,
             'phone' => $this->faker->unique()->numerify('08##########'),
             'email_verified_at' => now(),
+            // 'password' => static::$password ??= Hash::make(str_repeat('1', $this->faker->numberBetween(1, 8))),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
