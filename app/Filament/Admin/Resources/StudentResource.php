@@ -31,6 +31,9 @@ class StudentResource extends Resource
                     ->label('Name')
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('nis')
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('user.email')
                     ->label('Email')
                     ->required()
@@ -47,9 +50,13 @@ class StudentResource extends Resource
                         'student' => 'Student',
                     ])
                     ->required(),
-                Forms\Components\TextInput::make('nis')
+                Forms\Components\Select::make('user.gender')
+                    ->label('Gender')
                     ->required()
-                    ->maxLength(255),
+                    ->options([
+                        'L' => 'Laki-Laki',
+                        'P' => 'Perempuan',
+                    ])
             ]);
     }
 
@@ -61,8 +68,17 @@ class StudentResource extends Resource
                     ->label('Name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nis')
+                    ->label('NIS')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('user.email')
+                    ->label('Email')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('user.phone')
+                    ->label('Phone')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('status')
+                    ->label('Status')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('user.gender')
                     ->label('Gender')
@@ -71,14 +87,18 @@ class StudentResource extends Resource
                 Tables\Columns\TextColumn::make('user.roles.name')
                     ->badge()
                     ->label('Role'),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
+                Tables\Columns\TextColumn::make('user.address')
+                    ->label('Address')
+                    ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                // Tables\Columns\TextColumn::make('created_at')
+                //     ->dateTime()
+                //     ->sortable()
+                //     ->toggleable(isToggledHiddenByDefault: true),
+                // Tables\Columns\TextColumn::make('updated_at')
+                //     ->dateTime()
+                //     ->sortable()
+                //     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
