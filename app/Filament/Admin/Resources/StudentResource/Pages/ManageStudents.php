@@ -3,12 +3,15 @@
 namespace App\Filament\Admin\Resources\StudentResource\Pages;
 
 use App\Filament\Admin\Resources\StudentResource;
-use App\Models\User;
-use App\Models\Student;
 use Filament\Actions;
 use Filament\Resources\Pages\ManageRecords;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Facades\DB;
+
+// Model
+use App\Models\User;
+use App\Models\Student;
 
 class ManageStudents extends ManageRecords
 {
@@ -19,67 +22,89 @@ class ManageStudents extends ManageRecords
         return [
             Actions\CreateAction::make()
                 ->using(function (array $data): Model {
-                    // Create Student first
-                    $student = Student::create([
-                        'nis' => $data['nis'],
-                        'status' => false,
-                    ]);
+                    DB::beginTransaction();
 
-                    // Create User with polymorphic relation
-                    $user = User::create([
-                        'name' => $data['user']['name'],
-                        'email' => $data['user']['email'],
-                        'phone' => $data['user']['phone'],
-                        'gender' => $data['user']['gender'],
-                        'address' => $data['user']['address'] ?? null,
-                        'password' => $data['user']['password'],
-                        'userable_id' => $student->id,
-                        'userable_type' => Student::class,
-                    ]);
+                    try {
+                        
+                        $student = Student::create([
+                            'nis' => $data['nis'],
+                            'status' => false,
+                        ]);
 
-                    // Assign role to user
-                    $user->assignRole('student');
+                        
+                        $user = User::create([
+                            'name' => $data['user']['name'],
+                            'email' => $data['user']['email'],
+                            'phone' => $data['user']['phone'],
+                            'gender' => $data['user']['gender'],
+                            'address' => $data['user']['address'] ?? null,
+                            'password' => $data['user']['password'],
+                            'userable_id' => $student->id,
+                            'userable_type' => Student::class,
+                        ]);
 
-                    return $student->load('user');
+                        
+                        $user->assignRole('student');
+
+                        DB::commit();
+
+                        return $student->load('user');
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+
+                        throw $e;
+                    }
                 }),
         ];
     }
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        // Update Student data
-        $record->update([
-            'nis' => $data['nis'],
-            'status' => $data['status'] ?? true,
-        ]);
+        DB::beginTransaction();
 
-        // Update User data
-        $userUpdateData = [
-            'name' => $data['user']['name'],
-            'email' => $data['user']['email'],
-            'phone' => $data['user']['phone'],
-            'gender' => $data['user']['gender'],
-            'address' => $data['user']['address'] ?? null,
-        ];
+        try {
+            $record->update([
+                'nis' => $data['nis'],
+                'status' => $data['status'] ?? $record->status,
+            ]);
 
-        // Only update password if provided
-        if (!empty($data['user']['password'])) {
-            $userUpdateData['password'] = $data['user']['password'];
+            if ($record->user) {
+                $userUpdateData = [
+                    'name' => $data['user']['name'],
+                    'email' => $data['user']['email'],
+                    'phone' => $data['user']['phone'],
+                    'gender' => $data['user']['gender'],
+                    'address' => $data['user']['address'] ?? null,
+                ];
+
+                // Only update password if provided and not empty
+                if (!empty($data['user']['password'])) {
+                    $userUpdateData['password'] = $data['user']['password']; // Already hashed by form
+                }
+
+                $record->user->update($userUpdateData);
+            }
+            
+            DB::commit();
+
+            return $record->load('user');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
-
-        $record->user()->update($userUpdateData);
-
-        return $record->load('user');
     }
 
     protected function handleRecordDeletion(Model $record): void
     {
-        // Delete the associated user first
-        if ($record->user) {
-            $record->user->delete();
+        DB::beginTransaction();
+
+        try {
+            $record->delete();
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
-        
-        // Then delete the student record
-        $record->delete();
     }
 }

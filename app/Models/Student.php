@@ -20,4 +20,15 @@ class Student extends Model
     {
         return $this->hasMany(Pkl::class);
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($student) {
+            if ($student->user) {
+                $student->user->syncRoles([]);
+                
+                $student->user->delete();
+            }
+        });
+    }
 }
