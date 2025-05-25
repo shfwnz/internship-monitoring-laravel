@@ -11,6 +11,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\Wizard;
 
 // Model
 use App\Models\User;
@@ -26,37 +28,56 @@ class StudentResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
+            ->columns(1) 
             ->schema([
-                Forms\Components\TextInput::make('user.name')
-                    ->label('Name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('nis')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('user.email')
-                    ->label('Email')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('user.phone')
-                    ->label('Phone')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Select::make('user.roles.name')
-                    ->label('Role')
-                    ->options([
-                        'admin' => 'Admin',
-                        'teacher' => 'Teacher',
-                        'student' => 'Student',
-                    ])
-                    ->required(),
-                Forms\Components\Select::make('user.gender')
-                    ->label('Gender')
-                    ->required()
-                    ->options([
-                        'L' => 'Laki-Laki',
-                        'P' => 'Perempuan',
-                    ])
+                Wizard::make([
+                    Wizard\Step::make('User Information')
+                        ->schema([
+                            Forms\Components\TextInput::make('user.name')
+                                ->label('Name')
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\TextInput::make('user.email')
+                                ->label('Email')
+                                ->email()
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\TextInput::make('user.phone')
+                                ->label('Phone')
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\Select::make('user.gender')
+                                ->label('Gender')
+                                ->required()
+                                ->options([
+                                    'L' => 'Laki-Laki',
+                                    'P' => 'Perempuan',
+                                ]),
+                            Forms\Components\Textarea::make('user.address')
+                                ->label('Address')
+                                ->rows(3)
+                                ->columnSpanFull(), 
+                            Forms\Components\TextInput::make('user.password')
+                                ->label('Password')
+                                ->password()
+                                ->required(fn (string $context): bool => $context === 'create')
+                                ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                                ->dehydrated(fn ($state) => filled($state))
+                                ->maxLength(255)
+                                ->columnSpanFull(),
+                        ])->columns(2),
+                        
+                    Wizard\Step::make('Student Information')
+                        ->schema([
+                            Forms\Components\TextInput::make('nis')
+                                ->label('NIS')
+                                ->required()
+                                ->maxLength(255)
+                                ->unique(Student::class, 'nis', ignoreRecord: true)
+                                ->columnSpanFull(),
+                        ])->columns(2), 
+                        
+                ])->columnSpanFull() 
             ]);
     }
 
@@ -66,42 +87,64 @@ class StudentResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('nis')
                     ->label('NIS')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('user.email')
                     ->label('Email')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('user.phone')
                     ->label('Phone')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('status')
                     ->label('Status')
-                    ->boolean(),
+                    ->boolean()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('user.gender')
                     ->label('Gender')
                     ->formatStateUsing(fn ($state) => $state === 'L' ? 'Laki-Laki' : 'Perempuan')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('user.roles.name')
-                    ->badge()
-                    ->label('Role'),
                 Tables\Columns\TextColumn::make('user.address')
                     ->label('Address')
                     ->searchable()
+                    ->limit(50)
                     ->toggleable(isToggledHiddenByDefault: true),
-                // Tables\Columns\TextColumn::make('created_at')
-                //     ->dateTime()
-                //     ->sortable()
-                //     ->toggleable(isToggledHiddenByDefault: true),
-                // Tables\Columns\TextColumn::make('updated_at')
-                //     ->dateTime()
-                //     ->sortable()
-                //     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        1 => 'Active',
+                        0 => 'Inactive',
+                    ])
+                    ->label('Status'),
+                Tables\Filters\SelectFilter::make('gender')
+                    ->options([
+                        'L' => 'Laki-Laki',
+                        'P' => 'Perempuan',
+                    ])
+                    ->label('Gender')
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['value'],
+                                fn (Builder $query, $value): Builder => $query->whereHas('user', function (Builder $query) use ($value) {
+                                    $query->where('gender', $value);
+                                }),
+                            );
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -111,7 +154,8 @@ class StudentResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getPages(): array
@@ -120,5 +164,10 @@ class StudentResource extends Resource
             'index' => Pages\ManageStudents::route('/'),
         ];
     }
-}
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['user']);
+    }
+}
