@@ -5,9 +5,10 @@ namespace App\Filament\Admin\Resources\StudentResource\Pages;
 use App\Filament\Admin\Resources\StudentResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Facades\DB;
+use Illuminate\Support\Facades\DB;
 
 // Model
 use App\Models\User;
@@ -50,9 +51,17 @@ class ManageStudents extends ManageRecords
 
                         return $student->load('user');
                     } catch (\Exception $e) {
+                        
+                        \Log::error($e);
                         DB::rollBack();
 
-                        throw $e;
+                        Notification::make()
+                            ->title('Error creating student')
+                            ->body('There was an error while saving the data. Make sure the email is not already in use.')
+                            ->danger()
+                            ->send();
+
+                        $this->halt();
                     }
                 }),
         ];
@@ -69,17 +78,18 @@ class ManageStudents extends ManageRecords
             ]);
 
             if ($record->user) {
+                $userData = $data['user'];
+
                 $userUpdateData = [
-                    'name' => $data['user']['name'],
-                    'email' => $data['user']['email'],
-                    'phone' => $data['user']['phone'],
-                    'gender' => $data['user']['gender'],
-                    'address' => $data['user']['address'] ?? null,
+                    'name' => $userData['name'] ?? $record->user->name,
+                    'email' => $userData['email'] ?? $record->user->email,
+                    'phone' => $userData['phone'] ?? $record->user->phone,
+                    'gender' => $userData['gender'] ?? $record->user->gender,
+                    'address' => $userData['address'] ?? $record->user->address,
                 ];
 
-                // Only update password if provided and not empty
-                if (!empty($data['user']['password'])) {
-                    $userUpdateData['password'] = $data['user']['password']; // Already hashed by form
+                if (!empty($userData['password'])) {
+                    $userUpdateData['password'] = Hash::make($userData['password']); 
                 }
 
                 $record->user->update($userUpdateData);
@@ -88,8 +98,16 @@ class ManageStudents extends ManageRecords
             DB::commit();
 
             return $record->load('user');
+
         } catch (\Exception $e) {
             DB::rollBack();
+
+            Notification::make()
+                ->title('Error updating student')
+                ->body('There was an error while saving the data. Make sure the email is not already in use.')
+                ->danger()
+                ->send();
+
             throw $e;
         }
     }
@@ -104,6 +122,13 @@ class ManageStudents extends ManageRecords
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
+
+            Notification::make()
+                ->title('Error deleting student')
+                ->body('There was an error while deleting the data.')
+                ->danger()
+                ->send();
+
             throw $e;
         }
     }

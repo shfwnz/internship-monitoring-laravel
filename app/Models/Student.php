@@ -30,5 +30,6 @@ class Student extends Model
                 $student->user->delete();
             }
         });
+
     }
 }
