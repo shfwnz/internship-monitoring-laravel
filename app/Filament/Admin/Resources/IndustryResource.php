@@ -29,9 +29,11 @@ class IndustryResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('business_field_id')
+                Forms\Components\Select::make('business_field_id')
+                    ->label('Business Field')
+                    ->relationship('business_field', 'name') // Show Name
                     ->required()
-                    ->numeric(),
+                    ->searchable(),
                 Forms\Components\TextInput::make('address')
                     ->required()
                     ->maxLength(255),
@@ -52,8 +54,9 @@ class IndustryResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('business_field_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('business_field.name')
+                    ->label('Business Field')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('address')
                     ->searchable(),
