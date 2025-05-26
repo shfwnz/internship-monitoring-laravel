@@ -5,6 +5,13 @@ namespace App\Filament\Admin\Resources\TeacherResource\Pages;
 use App\Filament\Admin\Resources\TeacherResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
+// Model
+use App\Models\User;
+use App\Models\Teacher;
 
 class ManageTeachers extends ManageRecords
 {
@@ -13,7 +20,43 @@ class ManageTeachers extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->using(function (array $data): Model {
+                    DB::beginTransaction();
+
+                    try {
+                        $teacher = Teacher::create([
+                            'nip' => $data['nip'],
+                        ]);
+
+                        $user = User::create([
+                            'name' => $data['user']['name'],
+                            'email' => $data['user']['email'],
+                            'phone' => $data['user']['phone'],
+                            'gender' => $data['user']['gender'],
+                            'address' => $data['user']['address'] ?? null,
+                            'password' => $data['user']['password'],
+                            'userable_id' => $teacher->id,
+                            'userable_type' => Teacher::class,
+                        ]);
+
+                        $user->assignRole('teacher');
+
+                        DB::commit();
+
+                        return $teacher->load('user');
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+                        
+                        Notification::make()
+                            ->title('Error creating teacher')
+                            ->body('There was an error while creating the data.')
+                            ->danger()
+                            ->send();
+
+                        $this->halt();
+                    }
+                }),
         ];
     }
 }

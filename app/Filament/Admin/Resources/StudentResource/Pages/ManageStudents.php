@@ -26,7 +26,6 @@ class ManageStudents extends ManageRecords
                     DB::beginTransaction();
 
                     try {
-                        
                         $student = Student::create([
                             'nis' => $data['nis'],
                             'status' => false,
