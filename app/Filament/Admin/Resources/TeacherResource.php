@@ -50,8 +50,8 @@ class TeacherResource extends Resource
                                 ->label('Gender')
                                 ->required()
                                 ->options([
-                                    'L' => 'Laki-Laki',
-                                    'P' => 'Perempuan',
+                                    'L' => 'Male',
+                                    'P' => 'Female',
                                 ]),
                             Forms\Components\Textarea::make('user.address')
                                 ->label('Address')
@@ -100,7 +100,7 @@ class TeacherResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('user.gender')
                     ->label('Gender')
-                    ->formatStateUsing(fn ($state) => $state === 'L' ? 'Laki-Laki' : 'Perempuan')
+                    ->formatStateUsing(fn ($state) => $state === 'L' ? 'Male' : 'Female')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('user.roles.name')
                     ->badge()
@@ -121,8 +121,8 @@ class TeacherResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('gender')
                     ->options([
-                        'L' => 'Laki-Laki',
-                        'P' => 'Perempuan',
+                        'L' => 'Male',
+                        'P' => 'Female',
                     ])
                     ->label('Gender')
                     ->query(function (Builder $query, array $data): Builder {
