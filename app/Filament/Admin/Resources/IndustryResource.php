@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Wizard;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 // Model
@@ -25,26 +26,35 @@ class IndustryResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
+            ->columns(1)
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Select::make('business_field_id')
-                    ->label('Business Field')
-                    ->relationship('business_field', 'name') // Show Name
-                    ->required()
-                    ->searchable(),
-                Forms\Components\TextInput::make('address')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('phone')
-                    ->tel()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->required()
-                    ->maxLength(255),
+                Wizard::make([
+                    Wizard\Step::make('Business Information')
+                        ->icon('heroicon-o-building-office-2')
+                        ->schema([
+                            Forms\Components\TextInput::make('name')
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\TextInput::make('email')
+                                ->email()
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\TextInput::make('phone')
+                                ->tel()
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\Select::make('business_field_id')
+                                ->label('Business Field')
+                                ->relationship('business_field', 'name') // Show Name
+                                ->required()
+                                ->searchable(),
+                            Forms\Components\Textarea::make('address')
+                                ->rows(3)
+                                ->required()
+                                ->maxLength(255)
+                                ->columnSpanFull(),
+                    ])->columns(2),
+                ])
             ]);
     }
 
@@ -53,17 +63,19 @@ class IndustryResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('business_field.name')
                     ->label('Business Field')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('address')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('address')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -84,7 +96,8 @@ class IndustryResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getPages(): array
