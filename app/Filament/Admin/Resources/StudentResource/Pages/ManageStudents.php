@@ -37,7 +37,7 @@ class ManageStudents extends ManageRecords
                             'email' => $data['user']['email'],
                             'phone' => $data['user']['phone'],
                             'gender' => $data['user']['gender'],
-                            'address' => $data['user']['address'] ?? null,
+                            'address' => $data['user']['address'],
                             'password' => $data['user']['password'],
                             'userable_id' => $student->id,
                             'userable_type' => Student::class,
@@ -47,6 +47,12 @@ class ManageStudents extends ManageRecords
                         $user->assignRole('student');
 
                         DB::commit();
+
+                        Notification::make()
+                            ->title('Student created')
+                            ->body('The student was successfully created.')
+                            ->success()
+                            ->send();
 
                         return $student->load('user');
                     } catch (\Exception $e) {
@@ -80,11 +86,11 @@ class ManageStudents extends ManageRecords
                 $userData = $data['user'];
 
                 $userUpdateData = [
-                    'name' => $userData['name'] ?? $record->user->name,
-                    'email' => $userData['email'] ?? $record->user->email,
-                    'phone' => $userData['phone'] ?? $record->user->phone,
-                    'gender' => $userData['gender'] ?? $record->user->gender,
-                    'address' => $userData['address'] ?? $record->user->address,
+                    'name' => $userData['name'],
+                    'email' => $userData['email'],
+                    'phone' => $userData['phone'],
+                    'gender' => $userData['gender'],
+                    'address' => $userData['address'],
                 ];
 
                 if (!empty($userData['password'])) {
@@ -95,6 +101,12 @@ class ManageStudents extends ManageRecords
             }
             
             DB::commit();
+
+            Notification::make()
+                ->title('Student updated')
+                ->body('The student was successfully updated.')
+                ->success()
+                ->send();
 
             return $record->load('user');
 
@@ -120,6 +132,12 @@ class ManageStudents extends ManageRecords
             $record->delete();
 
             DB::commit();
+
+            Notification::make()
+                ->title('Student deleted')
+                ->body('The student was successfully deleted.')
+                ->success()
+                ->send();
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -129,7 +147,7 @@ class ManageStudents extends ManageRecords
                 ->danger()
                 ->send();
 
-            throw $e;
+            $this->halt();
         }
     }
 }

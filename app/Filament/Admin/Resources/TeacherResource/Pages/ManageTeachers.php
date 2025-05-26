@@ -35,7 +35,7 @@ class ManageTeachers extends ManageRecords
                             'email' => $data['user']['email'],
                             'phone' => $data['user']['phone'],
                             'gender' => $data['user']['gender'],
-                            'address' => $data['user']['address'] ?? null,
+                            'address' => $data['user']['address'],
                             'password' => $data['user']['password'],
                             'userable_id' => $teacher->id,
                             'userable_type' => Teacher::class,
@@ -44,6 +44,12 @@ class ManageTeachers extends ManageRecords
                         $user->assignRole('teacher');
 
                         DB::commit();
+
+                        Notification::make()
+                            ->title('Teacher created')
+                            ->body('The teacher was successfully created.')
+                            ->success()
+                            ->send();
 
                         return $teacher->load('user');
                     } catch (\Exception $e) {
@@ -78,8 +84,7 @@ class ManageTeachers extends ManageRecords
                     'email' => $userData['email'],
                     'phone' => $userData['phone'],
                     'gender' => $userData['gender'],
-                    'address' => $userData['address'] ?? null,
-
+                    'address' => $userData['address'],
                 ];
 
                 if (!empty($userData['password'])) {
@@ -90,6 +95,12 @@ class ManageTeachers extends ManageRecords
             }
             
             DB::commit();
+
+            Notification::make()
+                ->title('Teacher updated')
+                ->body('The teacher was successfully updated.')
+                ->success()
+                ->send();
 
             return $record->load('user');
 
@@ -115,6 +126,12 @@ class ManageTeachers extends ManageRecords
             $record->delete();
 
             DB::commit();
+
+            Notification::make()
+                ->title('Teacher deleted')
+                ->body('The teacher was successfully deleted.')
+                ->success()
+                ->send();
         } catch (\Exception $e) {
             DB::rollBack();
 
