@@ -87,16 +87,26 @@ class TeacherResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nip')
+                    ->label('NIP')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('user.email')
                     ->label('Email')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('user.phone')
                     ->label('Phone')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('user.gender')
+                    ->label('Gender')
+                    ->formatStateUsing(fn ($state) => $state === 'L' ? 'Laki-Laki' : 'Perempuan')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('user.roles.name')
                     ->badge()
                     ->label('Role'),
+                Tables\Columns\TextColumn::make('user.address')
+                    ->label('Address')
+                    ->limit(50)
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
