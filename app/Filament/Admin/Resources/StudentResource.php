@@ -96,8 +96,7 @@ class StudentResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('user.email')
                     ->label('Email')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('user.phone')
                     ->label('Phone')
                     ->searchable()
