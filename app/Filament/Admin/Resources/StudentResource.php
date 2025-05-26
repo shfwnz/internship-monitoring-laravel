@@ -155,7 +155,11 @@ class StudentResource extends Resource
                         return app(StudentResource\Pages\ManageStudents::class)
                             ->handleRecordUpdate($record, $data);
                     }),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->using(function (Model $record): void {
+                        app(StudentResource\Pages\ManageStudents::class)
+                            ->handleRecordDeletion($record);
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

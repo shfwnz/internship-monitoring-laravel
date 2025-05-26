@@ -111,11 +111,12 @@ class ManageStudents extends ManageRecords
         }
     }
 
-    protected function handleRecordDeletion(Model $record): void
+    public function handleRecordDeletion(Model $record): void
     {
         DB::beginTransaction();
 
         try {
+            $record->user->delete();
             $record->delete();
 
             DB::commit();
