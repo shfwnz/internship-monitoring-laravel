@@ -117,7 +117,21 @@ class TeacherResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('gender')
+                    ->options([
+                        'L' => 'Laki-Laki',
+                        'P' => 'Perempuan',
+                    ])
+                    ->label('Gender')
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['value'],
+                                fn (Builder $query, $value): Builder => $query->whereHas('user', function (Builder $query) use ($value) {
+                                    $query->where('gender', $value);
+                                }),
+                            );
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
