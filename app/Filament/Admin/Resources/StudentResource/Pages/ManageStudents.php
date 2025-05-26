@@ -63,11 +63,11 @@ class ManageStudents extends ManageRecords
 
                         $this->halt();
                     }
-                }),
+                })
         ];
     }
 
-    protected function handleRecordUpdate(Model $record, array $data): Model
+    public function handleRecordUpdate(Model $record, array $data): Model
     {
         DB::beginTransaction();
 
@@ -108,7 +108,7 @@ class ManageStudents extends ManageRecords
                 ->danger()
                 ->send();
 
-            throw $e;
+            $this->halt();
         }
     }
 

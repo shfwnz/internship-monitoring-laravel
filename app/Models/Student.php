@@ -23,6 +23,8 @@ class Student extends Model
 
     protected static function booted()
     {
+        
+
         static::deleting(function ($student) {
             if ($student->user) {
                 $student->user->syncRoles([]);

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Wizard;
+use Illuminate\Database\Eloquent\Model;
 
 // Model
 use App\Models\User;
@@ -61,7 +62,6 @@ class StudentResource extends Resource
                                 ->label('Password')
                                 ->password()
                                 ->required(fn (string $context): bool => $context === 'create')
-                                ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                                 ->dehydrated(fn ($state) => filled($state))
                                 ->maxLength(255)
                                 ->columnSpanFull(),
@@ -109,6 +109,9 @@ class StudentResource extends Resource
                     ->label('Gender')
                     ->formatStateUsing(fn ($state) => $state === 'L' ? 'Laki-Laki' : 'Perempuan')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('user.roles.name')
+                    ->badge()
+                    ->label('Role'),
                 Tables\Columns\TextColumn::make('user.address')
                     ->label('Address')
                     ->searchable()
@@ -147,7 +150,11 @@ class StudentResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                ->using(function (Model $record, array $data): Model {
+                    return app(\App\Filament\Admin\Resources\StudentResource\Pages\ManageStudents::class)
+                        ->handleRecordUpdate($record, $data);
+                }),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
