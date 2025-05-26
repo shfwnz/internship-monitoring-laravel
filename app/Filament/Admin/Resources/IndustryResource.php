@@ -68,6 +68,7 @@ class IndustryResource extends Resource
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('business_field.name')
+                    ->badge()
                     ->label('Business Field')
                     ->searchable()
                     ->sortable(),
