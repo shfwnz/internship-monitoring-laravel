@@ -57,6 +57,7 @@ class StudentResource extends Resource
                             Forms\Components\Textarea::make('user.address')
                                 ->label('Address')
                                 ->rows(3)
+                                ->maxLength(255)
                                 ->columnSpanFull(), 
                             Forms\Components\TextInput::make('user.password')
                                 ->label('Password')

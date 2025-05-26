@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Wizard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -26,30 +27,54 @@ class TeacherResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
+            ->columns(1)
             ->schema([
-                Forms\Components\TextInput::make('user.name')
-                    ->label('Name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('nip')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('user.email')
-                    ->label('Email')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('user.phone')
-                    ->label('Phone')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Select::make('user.roles.name')
-                    ->label('Role')
-                    ->options([
-                        'admin' => 'Admin',
-                        'teacher' => 'Teacher',
-                        'student' => 'Student',
+                Wizard::make([
+                    Wizard\Step::make('User Information')
+                        ->schema([
+                            Forms\Components\TextInput::make('user.name')
+                                ->label('Name')
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\TextInput::make('user.email')
+                                ->label('Email')
+                                ->email()
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\TextInput::make('user.phone')
+                                ->label('Phone')
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\Select::make('user.gender')
+                                ->label('Gender')
+                                ->required()
+                                ->options([
+                                    'L' => 'Laki-Laki',
+                                    'P' => 'Perempuan',
+                                ]),
+                            Forms\Components\Textarea::make('user.address')
+                                ->label('Address')
+                                ->rows(3)
+                                ->maxLength(255)
+                                ->columnSpanFull(),
+                            Forms\Components\TextInput::make('user.password')
+                                ->label('Password')
+                                ->password()
+                                ->required(fn (string $context): bool => $context === 'create')
+                                ->dehydrated(fn ($state) => filled($state))
+                                ->maxLength(255)
+                                ->columnSpanFull(),
+                        ])->columns(2),
+                    Wizard\Step::make('Teacher Information')
+                        ->schema([
+                            Forms\Components\TextInput::make('nip')
+                                ->label('NIP')
+                                ->required()
+                                ->maxLength(255)
+                                ->unique(Teacher::class, 'nip', ignoreRecord: true)
+                                ->columnSpanFull(),
                     ])
-                    ->required(),
+                ])
             ]);
     }
 
