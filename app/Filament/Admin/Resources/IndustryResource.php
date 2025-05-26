@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\Wizard;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -89,8 +90,16 @@ class IndustryResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->using(function (Model $record, array $data): Model {
+                        return app(IndustryResource\Pages\ManageIndustries::class)
+                            ->handleRecordUpdate($record, $data);
+                    }),
+                Tables\Actions\DeleteAction::make()
+                    ->using(function (Model $record): void {
+                        app (IndustryResource\Pages\ManageIndustries::class)
+                            ->handleRecordDeletion($record);
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
