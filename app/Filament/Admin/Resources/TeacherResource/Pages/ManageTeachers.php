@@ -7,6 +7,7 @@ use Filament\Actions;
 use Filament\Resources\Pages\ManageRecords;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
 // Model
@@ -58,5 +59,50 @@ class ManageTeachers extends ManageRecords
                     }
                 }),
         ];
+    }
+
+    public function handleRecordUpdate(Model $record, array $data): Model
+    {
+        DB::beginTransaction();
+
+        try {
+            $record->update([
+                'nip' => $data['nip'],
+            ]);
+
+            if ($record->user) {
+                $userData = $data['user'];
+
+                $userUpdateData = [
+                    'name' => $userData['name'],
+                    'email' => $userData['email'],
+                    'phone' => $userData['phone'],
+                    'gender' => $userData['gender'],
+                    'address' => $userData['address'] ?? null,
+
+                ];
+
+                if (!empty($userData['password'])) {
+                    $userUpdateData['password'] = Hash::make($userData['password']); 
+                }
+
+                $record->user->update($userUpdateData);
+            }
+            
+            DB::commit();
+
+            return $record->load('user');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Notification::make()
+                ->title('Error updating teacher')
+                ->body('There was an error while saving the data. Make sure the email is not already in use.')
+                ->danger()
+                ->send();
+
+            $this->halt();
+        }
     }
 }

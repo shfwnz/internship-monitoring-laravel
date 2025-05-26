@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Wizard;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -134,7 +135,11 @@ class TeacherResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->using(function (Model $record, array $data): Model {
+                        return app(TeacherResource\Pages\ManageTeachers::class)
+                            ->handleRecordUpdate($record, $data);
+                    }),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
