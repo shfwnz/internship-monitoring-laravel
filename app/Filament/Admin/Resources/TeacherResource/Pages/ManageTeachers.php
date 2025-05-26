@@ -105,4 +105,26 @@ class ManageTeachers extends ManageRecords
             $this->halt();
         }
     }
+
+    public function handleRecordDeletion(Model $record): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $record->user->delete();
+            $record->delete();
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Notification::make()
+                ->title('Error deleting teacher')
+                ->body('There was an error while deleting the data.')
+                ->danger()
+                ->send();
+
+            $this->halt();
+        }
+    }
 }

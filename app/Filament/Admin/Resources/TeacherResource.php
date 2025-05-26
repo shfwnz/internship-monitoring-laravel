@@ -140,7 +140,11 @@ class TeacherResource extends Resource
                         return app(TeacherResource\Pages\ManageTeachers::class)
                             ->handleRecordUpdate($record, $data);
                     }),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->using(function (Model $record): void {
+                        app(TeacherResource\Pages\ManageTeachers::class)
+                            ->handleRecordDeletion($record);
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
