@@ -13,13 +13,24 @@ return new class extends Migration
     public function up(): void
     {
         DB::unprepared('
-            CREATE TRIGGER update_student_status
+            CREATE TRIGGER update_student_status_true
             AFTER INSERT ON internships
             FOR EACH ROW
             BEGIN
                 UPDATE students
                 SET status = true
                 WHERE id = NEW.student_id;
+            END
+        ');
+
+        DB::unprepared('
+            CREATE TRIGGER update_student_status_false
+            AFTER DELETE ON internships
+            FOR EACH ROW
+            BEGIN
+                UPDATE students
+                SET status = false
+                WHERE id = OLD.student_id;
             END
         ');
     }
@@ -29,6 +40,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::unprepared('DROP TRIGGER IF EXISTS update_student_status');
+        DB::unprepared('DROP TRIGGER IF EXISTS update_student_status_true');
+        DB::unprepared('DROP TRIGGER IF EXISTS update_student_status_false');
     }
 };
