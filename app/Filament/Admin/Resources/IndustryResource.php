@@ -48,6 +48,7 @@ class IndustryResource extends Resource
                                 ->label('Business Field')
                                 ->relationship('business_field', 'name') // Show Name
                                 ->required()
+                                ->preload()
                                 ->searchable(),
                             Forms\Components\Textarea::make('address')
                                 ->rows(3)
@@ -87,7 +88,11 @@ class IndustryResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('business_field_id')
+                    ->label('Business Field')
+                    ->relationship('business_field', 'name')
+                    ->searchable()
+                    ->preload(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
