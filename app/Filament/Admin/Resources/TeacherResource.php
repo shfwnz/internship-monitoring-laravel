@@ -32,6 +32,7 @@ class TeacherResource extends Resource
             ->schema([
                 Wizard::make([
                     Wizard\Step::make('User Information')
+                        ->icon('heroicon-o-user')
                         ->schema([
                             Forms\Components\TextInput::make('user.name')
                                 ->label('Name')
@@ -68,6 +69,7 @@ class TeacherResource extends Resource
                                 ->columnSpanFull(),
                         ])->columns(2),
                     Wizard\Step::make('Teacher Information')
+                        ->icon('heroicon-o-academic-cap')
                         ->schema([
                             Forms\Components\TextInput::make('nip')
                                 ->label('NIP')

@@ -33,6 +33,7 @@ class InternshipResource extends Resource
             ->schema([
                 Wizard::make([
                     Wizard\Step::make('Internship Information')
+                        ->icon('heroicon-o-briefcase')
                         ->schema([
                             Forms\Components\Select::make('student_id')
                                 ->label('Student')
@@ -65,6 +66,7 @@ class InternshipResource extends Resource
                                 ->preload(),
                         ]),
                     Wizard\Step::make('Dates and Image')
+                        ->icon('heroicon-o-calendar')
                         ->schema([
                             Forms\Components\FileUpload::make('image')
                                 ->label('Image')

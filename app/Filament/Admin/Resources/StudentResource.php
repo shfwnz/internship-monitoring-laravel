@@ -23,7 +23,7 @@ class StudentResource extends Resource
 {
     protected static ?string $model = Student::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationGroup = 'Data';
 
     public static function form(Form $form): Form
@@ -33,6 +33,7 @@ class StudentResource extends Resource
             ->schema([
                 Wizard::make([
                     Wizard\Step::make('User Information')
+                        ->icon('heroicon-o-user')
                         ->schema([
                             Forms\Components\TextInput::make('user.name')
                                 ->label('Name')
@@ -70,6 +71,7 @@ class StudentResource extends Resource
                         ])->columns(2),
                         
                     Wizard\Step::make('Student Information')
+                        ->icon('heroicon-o-user-group')
                         ->schema([
                             Forms\Components\TextInput::make('nis')
                                 ->label('NIS')
