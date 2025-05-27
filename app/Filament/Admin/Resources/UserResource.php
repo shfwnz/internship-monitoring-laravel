@@ -68,7 +68,7 @@ class UserResource extends Resource
                                 ->dehydrated(fn ($state) => filled($state))
                                 ->required(fn (string $operation): bool => $operation === 'create')
                                 ->columnSpanFull(),
-                    ])->columns(2),
+                        ])->columns(2),
                 ])
         ]);
     }
@@ -123,7 +123,17 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('role')
+                    ->options(Role::all()->pluck('name', 'id'))
+                    ->label('Role')
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['value'],
+                            fn (Builder $query, $value): Builder => $query->whereHas('roles', function (Builder $query) use ($value) {
+                                $query->where('roles.id', $value);
+                            })
+                        );
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -144,3 +154,4 @@ class UserResource extends Resource
         ];
     }
 }
+
