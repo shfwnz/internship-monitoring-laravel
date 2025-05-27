@@ -10,7 +10,7 @@ use App\Models\Industry;
 use App\Models\Student;
 use App\Models\Teacher;
 
-class InternshipsStatsOverview extends BaseWidget
+class InternshipStatsOverview extends BaseWidget
 {
     protected static ?int $sort = 1;
     protected function getStats(): array

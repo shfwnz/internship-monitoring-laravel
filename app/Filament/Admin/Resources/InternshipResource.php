@@ -40,6 +40,7 @@ class InternshipResource extends Resource
                                 ->required()
                                 ->options(
                                     Student::with('user')
+                                        ->where('status', false)
                                         ->get()
                                         ->pluck('user.name', 'id')
                                 )
@@ -77,6 +78,7 @@ class InternshipResource extends Resource
                                 ->required(),
                             Forms\Components\DatePicker::make('end_date')
                                 ->required()
+                                ->afterOrEqual('start_date')
                         ])->columns(2),
 
                 ])
