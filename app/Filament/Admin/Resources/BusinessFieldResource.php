@@ -20,7 +20,7 @@ class BusinessFieldResource extends Resource
     protected static ?string $model = BusinessField::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cube-transparent';
-    protected static ?string $navigationGroup = 'Field';
+    protected static ?string $navigationGroup = 'Industry';
 
     public static function form(Form $form): Form
     {

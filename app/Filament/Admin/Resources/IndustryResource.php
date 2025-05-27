@@ -22,7 +22,7 @@ class IndustryResource extends Resource
     protected static ?string $model = Industry::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
-    protected static ?string $navigationGroup = 'Data';
+    protected static ?string $navigationGroup = 'Industry';
 
     public static function form(Form $form): Form
     {
