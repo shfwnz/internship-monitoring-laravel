@@ -18,7 +18,7 @@ class InternshipStatsOverview extends BaseWidget
         return [
             Stat::make('Industries', Industry::count())
                 ->description('Industry Total')
-                ->descriptionIcon('heroicon-o-building-office')
+                ->descriptionIcon('heroicon-o-building-office-2')
                 ->color('primary'),
             Stat::make('Teachers', Teacher::count())
                 ->description('Teacher Total')
@@ -26,7 +26,7 @@ class InternshipStatsOverview extends BaseWidget
                 ->color('primary'),
             Stat::make('Students', Student::count())
                 ->description('Student Total')
-                ->descriptionIcon('heroicon-o-user')
+                ->descriptionIcon('heroicon-o-user-group')
                 ->color('primary'),
         ];
     }

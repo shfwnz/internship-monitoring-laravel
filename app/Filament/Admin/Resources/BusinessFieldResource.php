@@ -30,6 +30,7 @@ class BusinessFieldResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
+                    ->dehydrated(fn (string $value): string => strtolower($value))
                     ->columnSpanFull(),
             ]);
     }
@@ -60,7 +61,8 @@ class BusinessFieldResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getPages(): array
