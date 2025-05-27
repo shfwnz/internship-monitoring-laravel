@@ -4,14 +4,19 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\UserResource\Pages;
 use App\Filament\Admin\Resources\UserResource\RelationManagers;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Wizard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Hash;
+
+// Model
+use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 class UserResource extends Resource
 {
@@ -23,30 +28,49 @@ class UserResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
+            ->columns(1)
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
-                Forms\Components\TextInput::make('gender'),
-                Forms\Components\TextInput::make('address')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('phone')
-                    ->tel()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('userable_id')
-                    ->numeric(),
-                Forms\Components\TextInput::make('userable_type')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('password')
-                    ->password()
-                    ->required()
-                    ->maxLength(255),
-            ]);
+                Wizard::make([
+                    Wizard\Step::make('User')
+                        ->schema([
+                            Forms\Components\TextInput::make('name')
+                                ->label('Name')
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\TextInput::make('email')
+                                ->label('Email')
+                                ->email()
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\TextInput::make('phone')
+                                ->label('Phone')
+                                ->tel()
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\Select::make('gender')
+                                ->label('Gender')
+                                ->required()
+                                ->options([
+                                    'L' => 'Male',
+                                    'P' => 'Female',
+                                ]),
+                            Forms\Components\Textarea::make('address')
+                                ->label('Address')
+                                ->rows(3)
+                                ->required()
+                                ->maxLength(255)
+                                ->columnSpanFull(),
+                            Forms\Components\TextInput::make('password')
+                                ->label('Password')
+                                ->password()
+                                ->maxLength(255)
+                                ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                                ->dehydrated(fn ($state) => filled($state))
+                                ->required(fn (string $operation): bool => $operation === 'create')
+                                ->columnSpanFull(),
+                    ])->columns(2),
+                ])
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -57,19 +81,38 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('email_verified_at')
-                    ->dateTime()
+                Tables\Columns\TextColumn::make('gender')
+                    ->label('Gender')
+                    ->formatStateUsing(fn ($state) => $state === 'L' ? 'Male' : 'Female')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('gender'),
-                Tables\Columns\TextColumn::make('address')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('user.roles.name')
+                    ->badge()
+                    ->label('Role')
+                    ->getStateUsing(function ($record) {
+                        $roles = $record->roles()->get();
+                        
+                        if ($roles->isEmpty() && $record->userable) {
+                            $roles = $record->userable->user->roles ?? collect();
+                        }
+                        
+                        return $roles->pluck('name')->toArray();
+                    }),
+                Tables\Columns\TextColumn::make('address')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('email_verified_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('userable_id')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('userable_type')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -90,7 +133,8 @@ class UserResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getPages(): array

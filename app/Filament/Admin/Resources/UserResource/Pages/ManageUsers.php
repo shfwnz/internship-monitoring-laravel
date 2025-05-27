@@ -13,7 +13,11 @@ class ManageUsers extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->after(function ($record) {
+                
+                $record->assignRole('super_admin');
+            }),
         ];
     }
 }
