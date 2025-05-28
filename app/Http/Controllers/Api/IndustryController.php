@@ -37,6 +37,7 @@ class IndustryController extends Controller
             'address' => 'required|string',
             'phone' => 'required|unique:industries,phone|string',
             'email' => 'required|email|unique:industries,email',
+            'website' => 'nullable|url',
         ]);
 
         if ($validator->fails()) {
@@ -83,6 +84,7 @@ class IndustryController extends Controller
             'address' => 'required|string',
             'phone' => 'required|unique:industries,phone,' .$industry->id,
             'email' => 'required|email|unique:industries,email,' .$industry->id,
+            'website' => 'nullable|url',
         ]);
 
         if ($validator->fails()) {

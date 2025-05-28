@@ -21,6 +21,7 @@ class InternshipResource extends JsonResource
             'industry' => new IndustryResource($this->whenLoaded('industry')),
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
+            'file' => $this->file
         ];
     }
 }

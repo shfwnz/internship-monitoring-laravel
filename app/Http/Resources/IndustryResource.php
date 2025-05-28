@@ -25,7 +25,8 @@ class IndustryResource extends JsonResource
             }),
             'address' => $this->address,
             'phone' => $this->phone,
-            'email' => $this->email
+            'email' => $this->email,
+            'website' => $this->website
         ];
     }
 }

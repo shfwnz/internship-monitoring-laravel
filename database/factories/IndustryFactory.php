@@ -23,7 +23,7 @@ class IndustryFactory extends Factory
             'address' => $this->faker->address,
             'phone' => $this->faker->unique()->numerify('08##########'),
             'email' => $this->faker->unique()->safeEmail(),
-            'website' => $this->faker->url
+            'website' => 'https://' . $this->faker->domainWord . '.com',
         ];
     }
 }

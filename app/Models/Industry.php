@@ -15,6 +15,7 @@ class Industry extends Model
         'address',
         'phone',
         'email',
+        'website',
     ];
 
     public function pkl()
