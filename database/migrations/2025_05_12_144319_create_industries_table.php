@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('address');
             $table->string('phone')->unique();
             $table->string('email')->unique();
+            $table->string('website')->nullable();
             $table->timestamps();
             
             $table->foreign('business_field_id')->references('id')->on('business_fields')->onDelete('restrict');

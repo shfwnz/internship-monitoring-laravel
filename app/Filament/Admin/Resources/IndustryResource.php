@@ -44,12 +44,17 @@ class IndustryResource extends Resource
                                 ->tel()
                                 ->required()
                                 ->maxLength(255),
+                            Forms\Components\TextInput::make('website')
+                                ->label('Website')
+                                ->url()
+                                ->maxLength(255),
                             Forms\Components\Select::make('business_field_id')
                                 ->label('Business Field')
                                 ->relationship('business_field', 'name') // Show Name
                                 ->required()
                                 ->preload()
-                                ->searchable(),
+                                ->searchable()
+                                ->columnSpanFull(),
                             Forms\Components\Textarea::make('address')
                                 ->rows(3)
                                 ->required()
@@ -76,6 +81,9 @@ class IndustryResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('website')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('address')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
