@@ -13,6 +13,7 @@ use Filament\Forms\Components\Wizard;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Storage;
 
 // Model
 use App\Models\Internship;
@@ -48,7 +49,6 @@ class InternshipResource extends Resource
                                 ->preload(),
                             Forms\Components\Select::make('teacher_id')
                                 ->label('Teacher')
-                                ->required()
                                 ->options(
                                     Teacher::with('user')
                                         ->get()
@@ -69,11 +69,15 @@ class InternshipResource extends Resource
                     Wizard\Step::make('Dates and Image')
                         ->icon('heroicon-o-calendar')
                         ->schema([
-                            Forms\Components\FileUpload::make('image')
-                                ->label('Image')
-                                ->image()
+                            Forms\Components\FileUpload::make('file')
+                                ->label('File')
                                 ->required()
-                                ->directory('internship-images')
+                                ->acceptedFileTypes(['application/pdf'])
+                                ->maxFiles(1)
+                                ->downloadable()
+                                ->openable()
+                                ->maxSize(2048)
+                                ->directory('internship-files')
                                 ->visibility('public')
                                 ->columnSpanFull(),
                             Forms\Components\DatePicker::make('start_date')
@@ -109,11 +113,10 @@ class InternshipResource extends Resource
                 Tables\Columns\TextColumn::make('end_date')
                     ->date('M d, Y')
                     ->sortable(),
-                Tables\Columns\ImageColumn::make('image')
-                    ->label('Image')
-                    ->height(50)
-                    ->width(50)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\IconColumn::make('file')
+                    ->label('File')
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
