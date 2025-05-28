@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('gender', ['L', 'P'])->nullable();
             $table->string('address')->nullable();
             $table->string('phone')->nullable()->unique();
+            $table->string('image')->nullable();
             
             // role
             $table->unsignedBigInteger('userable_id')->nullable();

@@ -39,6 +39,7 @@ class ManageTeachers extends ManageRecords
                             'password' => $data['user']['password'],
                             'userable_id' => $teacher->id,
                             'userable_type' => Teacher::class,
+                            'image' => $data['user']['image'],
                         ]);
 
                         $user->assignRole('teacher');
@@ -85,6 +86,7 @@ class ManageTeachers extends ManageRecords
                     'phone' => $userData['phone'],
                     'gender' => $userData['gender'],
                     'address' => $userData['address'],
+                    'image' => $userData['image'],
                 ];
 
                 if (!empty($userData['password'])) {

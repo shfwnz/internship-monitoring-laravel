@@ -73,6 +73,12 @@ class StudentResource extends Resource
                     Wizard\Step::make('Student Information')
                         ->icon('heroicon-o-user-group')
                         ->schema([
+                            Forms\Components\FileUpload::make('user.image')
+                                ->label('Image')
+                                ->image()
+                                ->required()
+                                ->directory('student-image')
+                                ->columnSpanFull(),
                             Forms\Components\TextInput::make('nis')
                                 ->label('NIS')
                                 ->required()
@@ -89,6 +95,12 @@ class StudentResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('user.image')
+                    ->label('Image')
+                    ->height(50)
+                    ->width(50)
+                    ->rounded()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Name')
                     ->searchable()

@@ -71,6 +71,11 @@ class TeacherResource extends Resource
                     Wizard\Step::make('Teacher Information')
                         ->icon('heroicon-o-academic-cap')
                         ->schema([
+                            Forms\Components\FileUpload::make('user.image')
+                                ->label('Image')
+                                ->image()
+                                ->directory('teacher-images')
+                                ->columnSpanFull(),
                             Forms\Components\TextInput::make('nip')
                                 ->label('NIP')
                                 ->required()
@@ -86,6 +91,12 @@ class TeacherResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('user.image')
+                    ->label('Image')
+                    ->height(50)
+                    ->width(50)
+                    ->rounded()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Name')
                     ->searchable()

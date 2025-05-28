@@ -32,6 +32,7 @@ class UserResource extends Resource
             ->schema([
                 Wizard::make([
                     Wizard\Step::make('User')
+                        ->icon('heroicon-o-user')
                         ->schema([
                             Forms\Components\TextInput::make('name')
                                 ->label('Name')
@@ -69,6 +70,16 @@ class UserResource extends Resource
                                 ->required(fn (string $operation): bool => $operation === 'create')
                                 ->columnSpanFull(),
                         ])->columns(2),
+                    Wizard\Step::make('image')
+                        ->icon('heroicon-o-photo')
+                        ->schema([
+                            Forms\Components\FileUpload::make('image')
+                                ->label('Image')
+                                ->image()
+                                ->required()
+                                ->directory('user-images')
+                                ->columnSpanFull(),
+                    ])
                 ])
         ]);
     }
@@ -77,6 +88,12 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('image')
+                    ->label('Image')
+                    ->height(50)
+                    ->width(50)
+                    ->rounded()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')

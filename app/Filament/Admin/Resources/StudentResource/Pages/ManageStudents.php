@@ -41,6 +41,7 @@ class ManageStudents extends ManageRecords
                             'password' => $data['user']['password'],
                             'userable_id' => $student->id,
                             'userable_type' => Student::class,
+                            'image' => $data['user']['image'],
                         ]);
 
                         
@@ -91,6 +92,7 @@ class ManageStudents extends ManageRecords
                     'phone' => $userData['phone'],
                     'gender' => $userData['gender'],
                     'address' => $userData['address'],
+                    'image' => $userData['image'],
                 ];
 
                 if (!empty($userData['password'])) {
