@@ -73,6 +73,8 @@ class InternshipResource extends Resource
                                 ->label('Image')
                                 ->image()
                                 ->required()
+                                ->directory('internship-images')
+                                ->visibility('public')
                                 ->columnSpanFull(),
                             Forms\Components\DatePicker::make('start_date')
                                 ->required(),
@@ -108,6 +110,9 @@ class InternshipResource extends Resource
                     ->date('M d, Y')
                     ->sortable(),
                 Tables\Columns\ImageColumn::make('image')
+                    ->label('Image')
+                    ->height(50)
+                    ->width(50)
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
