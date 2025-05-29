@@ -23,7 +23,8 @@ class UserResource extends JsonResource
             'address' => $this->address,
             'phone' => $this->phone,
             'roles' => $this->roles->pluck('name'), 
-            'user_type' => $this->user_type
+            'user_type' => $this->user_type,
+            'image' => $this->image
         ];
 
         // Profile (teacher or student)
