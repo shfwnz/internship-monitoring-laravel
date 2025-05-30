@@ -151,7 +151,12 @@ class TeacherController extends Controller
 
         try {
             $image = $request->file('image');
-            $image->storeAs('user-images', $image->hashName());
+            if ($image) {
+                $image->storeAs('user-images', $image->hashName());
+                $teacher->user->update([
+                    'image' => $image->hashName(),
+                ]);
+            }
 
             // Update Teacher
             $teacher->update($validator->validated());

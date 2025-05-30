@@ -152,7 +152,12 @@ class StudentController extends Controller
 
         try {
             $image = $request->file('image');
-            $image->storeAs('user-images', $image->hashName());
+            if ($image) {
+                $image->storeAs('user-images', $image->hashName());
+                $student->user->update([
+                    'image' => $image->hashName()
+                ]);
+            }
 
             // Update Student
             $student->update($validator->validated());
