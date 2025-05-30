@@ -56,6 +56,7 @@ class UserController extends Controller
             'gender' => 'required|in:L,P',
             'phone' => 'required|string|unique:users,phone',
             'address' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -68,6 +69,10 @@ class UserController extends Controller
         DB::beginTransaction();
 
         try {
+
+            $image = $request->file('image');
+            $image->storeAs('user-images', $image->hashName());
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -76,6 +81,7 @@ class UserController extends Controller
                 'phone' => $request->phone,
                 'address' => $request->address,
                 // Tidak ada userable_id/userable_type karena murni admin
+                'image' => $image->hashName(),
             ]);
 
             $user->assignRole('admin');
@@ -127,6 +133,7 @@ class UserController extends Controller
             'gender' => 'sometimes|in:L,P',
             'phone' => 'sometimes|string|unique:users,phone,'.$user->id,
             'address' => 'sometimes|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -136,16 +143,37 @@ class UserController extends Controller
             ], 422);
         }
 
-        $user->update($request->except('password'));
+        DB::beginTransaction();
 
-        if ($request->has('password')) {
-            $user->update(['password' => Hash::make($request->password)]);
+        try {
+
+            $image = $request->file('image');
+            if ($image) {
+                $image->storeAs('user-images', $image->hashName());
+                $user->update(['image' => $image->hashName()]);
+            }
+
+            $user->update($request->except('password'));
+
+            if ($request->has('password')) {
+                $user->update(['password' => Hash::make($request->password)]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'data' => new UserResource($user->fresh()->load('roles'))
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update admin user',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'data' => new UserResource($user->fresh()->load('roles'))
-        ]);
     }
 
     /**

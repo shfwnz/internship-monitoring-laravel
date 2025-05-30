@@ -44,7 +44,8 @@ class StudentController extends Controller
             'password' => 'required|string|min:8',
             'gender' => 'required|in:L,P',
             'phone' => 'required|string|unique:users,phone', 
-            'address' => 'required|string',    
+            'address' => 'required|string', 
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',   
             ], [
             'phone.unique' => 'Phone number has already been registered',
             'email.unique' => 'Email has already been registered',
@@ -62,6 +63,9 @@ class StudentController extends Controller
         DB::beginTransaction();
 
         try {
+            $image = $request->file('image');
+            $image->storeAs('user-images', $image->hashName());
+
             // Create Student
             $student = Student::create([
                 'nis' => $request->nis,
@@ -75,7 +79,8 @@ class StudentController extends Controller
                 'password' => Hash::make($request->password),
                 'gender' => $request->gender,
                 'phone' => $request->phone,
-                'address' => $request->address
+                'address' => $request->address,
+                'image' => $image->hashName()
             ])->assignRole('student');
     
             DB::commit();
@@ -128,6 +133,7 @@ class StudentController extends Controller
             'gender' => 'sometimes|in:L,P',
             'phone' => 'sometimes|string|unique:users,phone,'.$student->user->id,
             'address' => 'sometimes|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ], [
             'phone.unique' => 'Phone number has already been registered',
             'email.unique' => 'Email has already been registered',
@@ -145,12 +151,15 @@ class StudentController extends Controller
         DB::beginTransaction();
 
         try {
+            $image = $request->file('image');
+            $image->storeAs('user-images', $image->hashName());
+
             // Update Student
             $student->update($validator->validated());
     
             // Update User
             $student->user->update($request->only([
-                'name', 'email', 'password', 'gender', 'phone', 'address'
+                'name', 'email', 'password', 'gender', 'phone', 'address', 'image'
             ]));
     
             DB::commit();

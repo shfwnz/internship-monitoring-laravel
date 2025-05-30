@@ -136,7 +136,7 @@ class InternshipController extends Controller
                 $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                 
                 // Store file correctly
-                $filePath = $file->storeAs('internship', $fileName, 'public');
+                $filePath = $file->storeAs('internship-files', $fileName, 'public');
                 
                 // Verify file was stored
                 if (!Storage::disk('public')->exists($filePath)) {

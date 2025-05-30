@@ -45,6 +45,7 @@ class TeacherController extends Controller
             'gender' => 'required|in:L,P',
             'phone' => 'required|string|unique:users,phone', 
             'address' => 'required|string',    
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ], [
             'phone.unique' => 'Phone number has already been registered',
             'email.unique' => 'Email has already been registered',
@@ -62,6 +63,9 @@ class TeacherController extends Controller
         DB::beginTransaction();
 
         try {
+            $image = $request->file('image');
+            $image->storeAs('user-images', $image->hashName());
+
             // Create Teacher
             $teacher = Teacher::create([
                 'nip' => $request->nip,
@@ -75,6 +79,7 @@ class TeacherController extends Controller
                 'gender' => $request->gender,
                 'phone' => $request->phone,
                 'address' => $request->address,
+                'image' => $image->hashName(),
             ])->assignRole('teacher');
 
 
@@ -126,7 +131,8 @@ class TeacherController extends Controller
             'password' => 'required|string|min:8',
             'gender' => 'required|in:L,P',
             'phone' => 'required|string|unique:users,phone', 
-            'address' => 'required|string',    
+            'address' => 'required|string',   
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', 
             ], [
             'phone.unique' => 'Phone number has already been registered',
             'email.unique' => 'Email has already been registered',
@@ -144,12 +150,15 @@ class TeacherController extends Controller
         DB::beginTransaction();
 
         try {
+            $image = $request->file('image');
+            $image->storeAs('user-images', $image->hashName());
+
             // Update Teacher
             $teacher->update($validator->validated());
 
             // Update User
             $teacher->user->update($request->only([
-                'name', 'email', 'password', 'gender', 'phone', 'address'
+                'name', 'email', 'password', 'gender', 'phone', 'address', 'image'
             ]));
 
             DB::commit();
