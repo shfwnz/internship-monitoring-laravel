@@ -77,7 +77,7 @@ class StudentResource extends Resource
                                 ->label('Image')
                                 ->image()
                                 ->required()
-                                ->directory('student-image')
+                                ->directory('student-images')
                                 ->columnSpanFull(),
                             Forms\Components\TextInput::make('nis')
                                 ->label('NIS')

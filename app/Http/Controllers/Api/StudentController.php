@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 // Resources
@@ -37,16 +38,16 @@ class StudentController extends Controller
         $validator = Validator::make(request()->all(), [
             // Student
             'nis' => 'required|string|unique:students,nis',
-            
+
             // User
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
             'gender' => 'required|in:L,P',
-            'phone' => 'required|string|unique:users,phone', 
-            'address' => 'required|string', 
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',   
-            ], [
+            'phone' => 'required|string|unique:users,phone',
+            'address' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ], [
             'phone.unique' => 'Phone number has already been registered',
             'email.unique' => 'Email has already been registered',
             'nis.unique' => 'NIS has already been registered',
@@ -71,7 +72,7 @@ class StudentController extends Controller
                 'nis' => $request->nis,
                 'status' => false
             ]);
-    
+
             // Create User 
             $user = $student->user()->create([
                 'name' => $request->name,
@@ -82,15 +83,15 @@ class StudentController extends Controller
                 'address' => $request->address,
                 'image' => $image->hashName()
             ])->assignRole('student');
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Student created successfully',
                 'data' => new StudentResource($student->load('user'))
             ], 201);
-    
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -124,17 +125,17 @@ class StudentController extends Controller
 
         $validator = Validator::make($request->all(), [
             // Student
-            'nis' => 'sometimes|string|unique:students,nis,'.$student->id,
-            
+            'nis' => 'sometimes|string|unique:students,nis,' . $student->id,
+
             // User
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,'.$student->user->id,
+            'email' => 'sometimes|email|unique:users,email,' . $student->user->id,
             'password' => 'sometimes|string|min:8',
             'gender' => 'sometimes|in:L,P',
-            'phone' => 'sometimes|string|unique:users,phone,'.$student->user->id,
+            'phone' => 'sometimes|string|unique:users,phone,' . $student->user->id,
             'address' => 'sometimes|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            ], [
+        ], [
             'phone.unique' => 'Phone number has already been registered',
             'email.unique' => 'Email has already been registered',
             'nis.unique' => 'NIS has already been registered',
@@ -151,30 +152,41 @@ class StudentController extends Controller
         DB::beginTransaction();
 
         try {
-            $image = $request->file('image');
-            if ($image) {
-                $image->storeAs('user-images', $image->hashName());
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imagePath = $image->store('student-images', 'public');
+
+                if ($student->user->image) {
+                    Storage::delete('public/' . $student->user->image);
+                }
+
                 $student->user->update([
-                    'image' => $image->hashName()
+                    'image' => $imagePath
                 ]);
+
             }
 
             // Update Student
             $student->update($validator->validated());
-    
+
             // Update User
             $student->user->update($request->only([
-                'name', 'email', 'password', 'gender', 'phone', 'address', 'image'
+                'name',
+                'email',
+                'password',
+                'gender',
+                'phone',
+                'address'
             ]));
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Data has been updated',
-                'updated_data' => new StudentResource($student),    
+                'updated_data' => new StudentResource($student),
             ], 200);
-    
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -194,23 +206,23 @@ class StudentController extends Controller
 
         try {
             $student = Student::with('user')->findOrFail($id);
-            
+
             // Delete User
             if ($student->user) {
                 $student->user->delete();
             }
-            
+
             // Then delete Student
             $student->delete();
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Student and associated user deleted successfully',
                 'deleted_data' => new StudentResource($student)
             ], 200);
-    
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
