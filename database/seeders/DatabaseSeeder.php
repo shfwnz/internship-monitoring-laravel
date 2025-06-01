@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             \Spatie\Permission\PermissionRegistrar::class
         ]->forgetCachedPermissions();
 
-        $adminRole = Role::firstOrCreate(['name' => 'super_admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
         $teacherRole = Role::firstOrCreate(['name' => 'teacher', 'guard_name' => 'api']);
         $studentRole = Role::firstOrCreate(['name' => 'student', 'guard_name' => 'api']);
 

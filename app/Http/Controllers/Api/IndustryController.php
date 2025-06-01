@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -19,7 +20,14 @@ class IndustryController extends Controller
      */
     public function index()
     {
-        try {
+        $user = Auth::user();
+        if ($user->hasPermissionTo('view industries')) {
+            $industries = Industry::with('business_field')->get();
+        } else {
+            $industries = Industry::with('business_field')->where('user_id', $user->id)->get();
+        }
+        
+        
             $industries = Industry::with('business_field')->get();
 
             return response()->json(
@@ -30,17 +38,7 @@ class IndustryController extends Controller
                 ],
                 200,
             );
-        } catch (\Exception $e) {
-            Log::error('Industry index error: ' . $e->getMessage());
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Internal server error',
-                    'error' => $e->getMessage(),
-                ],
-                500,
-            );
-        }
+        
     }
 
     /**

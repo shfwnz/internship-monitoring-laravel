@@ -64,9 +64,9 @@ class AuthController extends Controller
         // Load the profile data based on role
         $profileData = null;
         if ($user->hasRole('student')) {
-            $profileData = $user->profile;
+            $profileData = $user->userable;
         } elseif ($user->hasRole('teacher')) {
-            $profileData = $user->profile;
+            $profileData = $user->userable;
         }
 
         return response()->json([
@@ -134,7 +134,7 @@ class AuthController extends Controller
                 ]);
 
                 $user = $student->user()->create($userData);
-                $user->assignRole('student');
+                $user->assignRoleWithGuard('student');
                 $profileId = $student->id;
             } else {
                 $teacher = Teacher::create([
@@ -142,7 +142,7 @@ class AuthController extends Controller
                 ]);
 
                 $user = $teacher->user()->create($userData);
-                $user->assignRole('teacher');
+                $user->assignRoleWithGuard('teacher');
                 $profileId = $teacher->id;
             }
 
