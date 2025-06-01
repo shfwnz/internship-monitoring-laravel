@@ -25,18 +25,24 @@ class IndustryController extends Controller
         try {
             $industries = Industry::with('business_field')->get();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'success',
-                'all_data' => IndustryResource::collection($industries),
-            ], 200);
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'success',
+                    'all_data' => IndustryResource::collection($industries),
+                ],
+                200,
+            );
         } catch (\Exception $e) {
             Log::error('Industry index error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Internal server error',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Internal server error',
+                    'error' => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -55,20 +61,26 @@ class IndustryController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data has not been created',
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Data has not been created',
+                    'errors' => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         $industry = Industry::create($validator->validated());
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Data has been created',
-            'created_data' => new IndustryResource($industry),
-        ], 201);
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'Data has been created',
+                'created_data' => new IndustryResource($industry),
+            ],
+            201,
+        );
     }
 
     /**
@@ -78,11 +90,14 @@ class IndustryController extends Controller
     {
         $industry = Industry::with('business_field')->findOrFail($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Data has been found',
-            'find_data' => new IndustryResource($industry),
-        ], 200);
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'Data has been found',
+                'find_data' => new IndustryResource($industry),
+            ],
+            200,
+        );
     }
 
     /**
@@ -97,25 +112,32 @@ class IndustryController extends Controller
             'business_field_id' => 'required|integer|exists:business_fields,id',
             'address' => 'required|string',
             'phone' => 'required|unique:industries,phone,' . $industry->id,
-            'email' => 'required|email|unique:industries,email,' . $industry->id,
+            'email' =>
+                'required|email|unique:industries,email,' . $industry->id,
             'website' => 'nullable|url',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data has not been updated',
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Data has not been updated',
+                    'errors' => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         $industry->update($validator->validated());
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Data has been updated',
-            'updated_data' => new IndustryResource($industry),
-        ], 200);
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'Data has been updated',
+                'updated_data' => new IndustryResource($industry),
+            ],
+            200,
+        );
     }
 
     /**
@@ -126,10 +148,13 @@ class IndustryController extends Controller
         $industry = Industry::find($id);
 
         $industry->delete();
-        return response()->json([
-            'success' => true,
-            'message' => 'Data has been deleted',
-            'deleted_data' => new IndustryResource($industry),
-        ], 200);
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'Data has been deleted',
+                'deleted_data' => new IndustryResource($industry),
+            ],
+            200,
+        );
     }
 }

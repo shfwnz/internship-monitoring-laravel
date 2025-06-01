@@ -21,7 +21,7 @@ class AuthController extends Controller
         $this->user = $user;
     }
 
-    public function login (Request $request)
+    public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
@@ -29,20 +29,26 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Login failed',
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Login failed',
+                    'errors' => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         $credentials = $request->only('email', 'password');
 
-        if(!$token = auth()->guard('api')->attempt($credentials)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Login failed',
-            ], 401);
+        if (!($token = auth()->guard('api')->attempt($credentials))) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Login failed',
+                ],
+                401,
+            );
         }
 
         return $this->respondWithToken($token);
@@ -56,33 +62,42 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->guard('api')->factory()->getTTL() * 60,
-            'user' => auth()->guard('api')->user()
+            'user' => auth()->guard('api')->user(),
         ]);
     }
 
-    public function register (Request $request)
+    public function register(Request $request)
     {
-       $validator = Validator::make($request->all(), [
-            'role' => 'required|in:student,teacher',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-            // Student
-            'nis' => 'required_if:role,student|string|unique:students,nis|nullable',
-            // Teacher
-            'nip' => 'required_if:role,teacher|string|unique:teachers,nip|nullable',
-        ], [
-            'nis.required_if' => 'NIS required if role is student',
-            'nip.required_if' => 'NIP required if role is teacher',
-            'role.in' => 'Role must be student or teacher'
-        ]);
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'role' => 'required|in:student,teacher',
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:8',
+                // Student
+                'nis' =>
+                    'required_if:role,student|string|unique:students,nis|nullable',
+                // Teacher
+                'nip' =>
+                    'required_if:role,teacher|string|unique:teachers,nip|nullable',
+            ],
+            [
+                'nis.required_if' => 'NIS required if role is student',
+                'nip.required_if' => 'NIP required if role is teacher',
+                'role.in' => 'Role must be student or teacher',
+            ],
+        );
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Registration failed',
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Registration failed',
+                    'errors' => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         DB::beginTransaction();
@@ -94,24 +109,24 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password),
                 'gender' => null,
                 'phone' => null,
-                'address' => null
+                'address' => null,
             ];
 
             if ($request->role === 'student') {
                 $student = Student::create([
                     'nis' => $request->nis,
-                    'status' => false
+                    'status' => false,
                 ]);
 
                 $user = $student->user()->create($userData);
                 $user->assignRole('student');
-                
+
                 $profileId = $student->id;
             } else {
                 $teacher = Teacher::create([
                     'nip' => $request->nip,
-                ]);         
-                
+                ]);
+
                 $user = $teacher->user()->create($userData);
                 $user->assignRole('teacher');
 
@@ -120,34 +135,38 @@ class AuthController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Registered successfully',
-                'register_data' => [
-                    'profile_id' => $profileId,
-                    'user_id' => $user->id,
-                    'role' => $request->role,
-                ]
-            ], 201);
-
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'Registered successfully',
+                    'register_data' => [
+                        'profile_id' => $profileId,
+                        'user_id' => $user->id,
+                        'role' => $request->role,
+                    ],
+                ],
+                201,
+            );
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Registration failed',
-                'errors' => $e->getMessage()
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Registration failed',
+                    'errors' => $e->getMessage(),
+                ],
+                422,
+            );
         }
     }
-
 
     public function logout(Request $request)
     {
         auth()->guard('api')->logout();
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'Successfully logged out'
+            'message' => 'Successfully logged out',
         ]);
     }
 }

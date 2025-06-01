@@ -20,12 +20,11 @@ class UserController extends Controller
      */
     public function me(Request $request)
     {
-        
         $user = $request->user()->load(['roles', 'userable']);
-        
+
         return response()->json([
             'success' => true,
-            'data' => new UserResource($user)
+            'data' => new UserResource($user),
         ]);
     }
 
@@ -34,13 +33,11 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::whereDoesntHave('userable')
-                   ->with('roles')
-                   ->get();
+        $users = User::whereDoesntHave('userable')->with('roles')->get();
 
         return response()->json([
             'success' => true,
-            'data' => UserResource::collection($users)
+            'data' => UserResource::collection($users),
         ]);
     }
 
@@ -60,16 +57,18 @@ class UserController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'errors' => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         DB::beginTransaction();
 
         try {
-
             $image = $request->file('image');
             $image->storeAs('user-images', $image->hashName());
 
@@ -88,18 +87,23 @@ class UserController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'data' => new UserResource($user->load('roles'))
-            ], 201);
-
+            return response()->json(
+                [
+                    'success' => true,
+                    'data' => new UserResource($user->load('roles')),
+                ],
+                201,
+            );
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create admin user',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Failed to create admin user',
+                    'error' => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -109,12 +113,12 @@ class UserController extends Controller
     public function show(string $id)
     {
         $user = User::whereDoesntHave('userable')
-                  ->with('roles')
-                  ->findOrFail($id);
+            ->with('roles')
+            ->findOrFail($id);
 
         return response()->json([
             'success' => true,
-            'data' => new UserResource($user)
+            'data' => new UserResource($user),
         ]);
     }
 
@@ -123,30 +127,31 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $user = User::whereDoesntHave('userable')
-                  ->findOrFail($id);
+        $user = User::whereDoesntHave('userable')->findOrFail($id);
 
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,'.$user->id,
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
             'password' => 'sometimes|string|min:8',
             'gender' => 'sometimes|in:L,P',
-            'phone' => 'sometimes|string|unique:users,phone,'.$user->id,
+            'phone' => 'sometimes|string|unique:users,phone,' . $user->id,
             'address' => 'sometimes|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'errors' => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         DB::beginTransaction();
 
         try {
-
             $image = $request->file('image');
             if ($image) {
                 $image->storeAs('user-images', $image->hashName());
@@ -163,16 +168,18 @@ class UserController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => new UserResource($user->fresh()->load('roles'))
+                'data' => new UserResource($user->fresh()->load('roles')),
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update admin user',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Failed to update admin user',
+                    'error' => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -181,14 +188,13 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        $user = User::whereDoesntHave('userable')
-                  ->findOrFail($id);
+        $user = User::whereDoesntHave('userable')->findOrFail($id);
 
         $user->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Admin user deleted successfully'
+            'message' => 'Admin user deleted successfully',
         ]);
     }
 }

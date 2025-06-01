@@ -19,11 +19,14 @@ class BusinessFieldController extends Controller
     {
         $fields = BusinessField::all();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'List of business fields',
-            'data' => BusinessFieldResource::collection($fields),
-        ], 200);
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'List of business fields',
+                'data' => BusinessFieldResource::collection($fields),
+            ],
+            200,
+        );
     }
 
     /**
@@ -36,20 +39,26 @@ class BusinessFieldController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         $field = BusinessField::create($validator->validated());
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Business field created',
-            'data' => new BusinessFieldResource($field),
-        ], 201);
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'Business field created',
+                'data' => new BusinessFieldResource($field),
+            ],
+            201,
+        );
     }
 
     /**
@@ -60,17 +69,23 @@ class BusinessFieldController extends Controller
         $field = BusinessField::find($id);
 
         if (!$field) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Business field not found'
-            ], 404);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Business field not found',
+                ],
+                404,
+            );
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Business field found',
-            'data' => new BusinessFieldResource($field),
-        ], 200);
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'Business field found',
+                'data' => new BusinessFieldResource($field),
+            ],
+            200,
+        );
     }
 
     /**
@@ -81,24 +96,31 @@ class BusinessFieldController extends Controller
         $field = BusinessField::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|unique:business_fields,name,' . $field->id,
+            'name' =>
+                'required|string|unique:business_fields,name,' . $field->id,
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         $field->update($validator->validated());
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Business field updated',
-            'data' => new BusinessFieldResource($field),
-        ], 200);
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'Business field updated',
+                'data' => new BusinessFieldResource($field),
+            ],
+            200,
+        );
     }
 
     /**
@@ -109,18 +131,24 @@ class BusinessFieldController extends Controller
         $field = BusinessField::find($id);
 
         if (!$field) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Business field not found'
-            ], 404);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Business field not found',
+                ],
+                404,
+            );
         }
 
         $field->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Business field deleted',
-            'data' => new BusinessFieldResource($field),
-        ], 200);
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'Business field deleted',
+                'data' => new BusinessFieldResource($field),
+            ],
+            200,
+        );
     }
 }

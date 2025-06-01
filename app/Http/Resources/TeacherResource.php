@@ -18,16 +18,18 @@ class TeacherResource extends JsonResource
             'id' => $this->id,
             'nip' => $this->nip,
             'user' => $this->whenLoaded('user', function () {
-                return $this->user ? [
-                    'name' => $this->user->name,
-                    'email' => $this->user->email,
-                    'gender' => $this->user->gender,
-                    'phone' => $this->user->phone,
-                    'address' => $this->user->address,
-                    'image' => $this->image,
-                    'role' => 'teacher'
-                ] : null;
-            })
+                return $this->user
+                    ? [
+                        'name' => $this->user->name,
+                        'email' => $this->user->email,
+                        'gender' => $this->user->gender,
+                        'phone' => $this->user->phone,
+                        'address' => $this->user->address,
+                        'image' => $this->image,
+                        'role' => 'teacher',
+                    ]
+                    : null;
+            }),
         ];
     }
 }

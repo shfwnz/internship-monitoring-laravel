@@ -19,34 +19,33 @@ class ManageInternships extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->using(function (array $data): Model {
-                    DB::beginTransaction();
+            Actions\CreateAction::make()->using(function (array $data): Model {
+                DB::beginTransaction();
 
-                    try {
-                        $internship = Internship::create($data);
+                try {
+                    $internship = Internship::create($data);
 
-                        DB::commit();
+                    DB::commit();
 
-                        Notification::make()
-                            ->title('Internship created')
-                            ->body('The internship was successfully created.')
-                            ->success()
-                            ->send();
+                    Notification::make()
+                        ->title('Internship created')
+                        ->body('The internship was successfully created.')
+                        ->success()
+                        ->send();
 
-                        return $internship;
-                    } catch (\Exception $e) {
-                        DB::rollBack();
+                    return $internship;
+                } catch (\Exception $e) {
+                    DB::rollBack();
 
-                        Notification::make()
-                            ->title('Error creating internship')
-                            ->body('There was an error while creating the data.')
-                            ->danger()
-                            ->send();
+                    Notification::make()
+                        ->title('Error creating internship')
+                        ->body('There was an error while creating the data.')
+                        ->danger()
+                        ->send();
 
-                        $this->halt();
-                    }
-                })
+                    $this->halt();
+                }
+            }),
         ];
     }
 

@@ -12,14 +12,12 @@ use App\Models\Internship;
 class InternshipLatest extends BaseWidget
 {
     protected static ?int $sort = 2;
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
         return $table
-            ->query(
-                Internship::query()->latest()->limit(5)
-            )
+            ->query(Internship::query()->latest()->limit(5))
             ->columns([
                 Tables\Columns\TextColumn::make('student.user.name')
                     ->label('Student')

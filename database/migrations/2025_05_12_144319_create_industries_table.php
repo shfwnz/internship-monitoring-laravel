@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -20,8 +19,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('website')->nullable();
             $table->timestamps();
-            
-            $table->foreign('business_field_id')->references('id')->on('business_fields')->onDelete('restrict');
+
+            $table
+                ->foreign('business_field_id')
+                ->references('id')
+                ->on('business_fields')
+                ->onDelete('restrict');
         });
     }
 

@@ -19,34 +19,33 @@ class ManageIndustries extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->using(function (array $data): Model {
-                    DB::beginTransaction();
+            Actions\CreateAction::make()->using(function (array $data): Model {
+                DB::beginTransaction();
 
-                    try {
-                        $industry = Industry::create($data);
+                try {
+                    $industry = Industry::create($data);
 
-                        DB::commit();
+                    DB::commit();
 
-                        Notification::make()
-                            ->title('Industry created')
-                            ->body('The industry was successfully created.')
-                            ->success()
-                            ->send();
+                    Notification::make()
+                        ->title('Industry created')
+                        ->body('The industry was successfully created.')
+                        ->success()
+                        ->send();
 
-                        return $industry;
-                    } catch (\Exception $e) {
-                        DB::rollBack();
+                    return $industry;
+                } catch (\Exception $e) {
+                    DB::rollBack();
 
-                        Notification::make()
-                            ->title('Error creating industry')
-                            ->body('There was an error while creating the data.')
-                            ->danger()
-                            ->send();
+                    Notification::make()
+                        ->title('Error creating industry')
+                        ->body('There was an error while creating the data.')
+                        ->danger()
+                        ->send();
 
-                        $this->halt();
-                    }
-                }),
+                    $this->halt();
+                }
+            }),
         ];
     }
 

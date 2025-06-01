@@ -12,7 +12,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/me', [UserController::class, 'me']);
     Route::get('internships/me', [InternshipController::class, 'myInternship']);
     Route::post('/logout', [AuthController::class, 'logout']);
-    
+
     Route::apiResource('users', UserController::class);
     Route::apiResource('teachers', TeacherController::class);
     Route::apiResource('students', StudentController::class);
@@ -20,4 +20,3 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('internships', InternshipController::class);
     Route::apiResource('business-fields', BusinessFieldController::class);
 });
-

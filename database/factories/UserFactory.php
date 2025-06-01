@@ -27,7 +27,10 @@ class UserFactory extends Factory
         $imageContent = file_get_contents('https://picsum.photos/300/300');
         $imageName = 'user_' . $this->faker->uuid() . '.jpg';
 
-        Storage::disk('public')->put('user-images/' . $imageName, $imageContent);
+        Storage::disk('public')->put(
+            'user-images/' . $imageName,
+            $imageContent,
+        );
 
         return [
             'name' => $this->faker->name(),
@@ -38,7 +41,7 @@ class UserFactory extends Factory
             'image' => 'user-images/' . $imageName,
             'email_verified_at' => now(),
             // 'password' => static::$password ??= Hash::make(str_repeat('1', $this->faker->numberBetween(1, 8))),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => (static::$password ??= Hash::make('password')),
             'remember_token' => Str::random(10),
         ];
     }
@@ -48,8 +51,10 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
+        return $this->state(
+            fn(array $attributes) => [
+                'email_verified_at' => null,
+            ],
+        );
     }
 }

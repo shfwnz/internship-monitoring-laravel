@@ -13,23 +13,32 @@ class CheckPermission
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $permission): Response
-    {
+    public function handle(
+        Request $request,
+        Closure $next,
+        string $permission,
+    ): Response {
         if (!auth()->check()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ], 401);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Unauthorized',
+                ],
+                401,
+            );
         }
-        
+
         if (auth()->user()->hasPermissionTo($permission)) {
             return $next($request);
         } else {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to access this resource'
-            ], 403);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' =>
+                        'You do not have permission to access this resource',
+                ],
+                403,
+            );
         }
-        
     }
 }

@@ -21,55 +21,53 @@ class ManageStudents extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->using(function (array $data): Model {
-                    DB::beginTransaction();
+            Actions\CreateAction::make()->using(function (array $data): Model {
+                DB::beginTransaction();
 
-                    try {
-                        $student = Student::create([
-                            'nis' => $data['nis'],
-                            'status' => false,
-                        ]);
+                try {
+                    $student = Student::create([
+                        'nis' => $data['nis'],
+                        'status' => false,
+                    ]);
 
-                        
-                        $user = User::create([
-                            'name' => $data['user']['name'],
-                            'email' => $data['user']['email'],
-                            'phone' => $data['user']['phone'],
-                            'gender' => $data['user']['gender'],
-                            'address' => $data['user']['address'],
-                            'password' => $data['user']['password'],
-                            'userable_id' => $student->id,
-                            'userable_type' => Student::class,
-                            'image' => $data['user']['image'],
-                        ]);
+                    $user = User::create([
+                        'name' => $data['user']['name'],
+                        'email' => $data['user']['email'],
+                        'phone' => $data['user']['phone'],
+                        'gender' => $data['user']['gender'],
+                        'address' => $data['user']['address'],
+                        'password' => $data['user']['password'],
+                        'userable_id' => $student->id,
+                        'userable_type' => Student::class,
+                        'image' => $data['user']['image'],
+                    ]);
 
-                        
-                        $user->assignRole('student');
+                    $user->assignRole('student');
 
-                        DB::commit();
+                    DB::commit();
 
-                        Notification::make()
-                            ->title('Student created')
-                            ->body('The student was successfully created.')
-                            ->success()
-                            ->send();
+                    Notification::make()
+                        ->title('Student created')
+                        ->body('The student was successfully created.')
+                        ->success()
+                        ->send();
 
-                        return $student->load('user');
-                    } catch (\Exception $e) {
-                        
-                        \Log::error($e);
-                        DB::rollBack();
+                    return $student->load('user');
+                } catch (\Exception $e) {
+                    \Log::error($e);
+                    DB::rollBack();
 
-                        Notification::make()
-                            ->title('Error creating student')
-                            ->body('There was an error while saving the data. Make sure the email is not already in use.')
-                            ->danger()
-                            ->send();
+                    Notification::make()
+                        ->title('Error creating student')
+                        ->body(
+                            'There was an error while saving the data. Make sure the email is not already in use.',
+                        )
+                        ->danger()
+                        ->send();
 
-                        $this->halt();
-                    }
-                })
+                    $this->halt();
+                }
+            }),
         ];
     }
 
@@ -96,12 +94,14 @@ class ManageStudents extends ManageRecords
                 ];
 
                 if (!empty($userData['password'])) {
-                    $userUpdateData['password'] = Hash::make($userData['password']); 
+                    $userUpdateData['password'] = Hash::make(
+                        $userData['password'],
+                    );
                 }
 
                 $record->user->update($userUpdateData);
             }
-            
+
             DB::commit();
 
             Notification::make()
@@ -111,13 +111,14 @@ class ManageStudents extends ManageRecords
                 ->send();
 
             return $record->load('user');
-
         } catch (\Exception $e) {
             DB::rollBack();
 
             Notification::make()
                 ->title('Error updating student')
-                ->body('There was an error while saving the data. Make sure the email is not already in use.')
+                ->body(
+                    'There was an error while saving the data. Make sure the email is not already in use.',
+                )
                 ->danger()
                 ->send();
 

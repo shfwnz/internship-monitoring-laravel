@@ -32,16 +32,12 @@ class User extends Authenticatable implements JWTSubject
         'image',
     ];
 
-
     /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>
      */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
     /**
      * Get the attributes that should be cast.

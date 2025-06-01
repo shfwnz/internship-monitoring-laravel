@@ -19,16 +19,18 @@ class StudentResource extends JsonResource
             'nis' => $this->nis,
             'status' => $this->status,
             'user' => $this->whenLoaded('user', function () {
-                return $this->user ? [
-                    'name' => $this->user->name,
-                    'email' => $this->user->email,
-                    'gender' => $this->user->gender,
-                    'phone' => $this->user->phone,
-                    'address' => $this->user->address,
-                    'image' => $this->image,
-                    'role' => 'student'
-                ] : null;
-            })
+                return $this->user
+                    ? [
+                        'name' => $this->user->name,
+                        'email' => $this->user->email,
+                        'gender' => $this->user->gender,
+                        'phone' => $this->user->phone,
+                        'address' => $this->user->address,
+                        'image' => $this->image,
+                        'role' => 'student',
+                    ]
+                    : null;
+            }),
         ];
     }
 }

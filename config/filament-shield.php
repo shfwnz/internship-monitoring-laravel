@@ -68,13 +68,9 @@ return [
     'exclude' => [
         'enabled' => true,
 
-        'pages' => [
-            'Dashboard',
-        ],
+        'pages' => ['Dashboard'],
 
-        'widgets' => [
-            'AccountWidget', 'FilamentInfoWidget',
-        ],
+        'widgets' => ['AccountWidget', 'FilamentInfoWidget'],
 
         'resources' => [],
     ],
@@ -88,5 +84,4 @@ return [
     'register_role_policy' => [
         'enabled' => true,
     ],
-
 ];

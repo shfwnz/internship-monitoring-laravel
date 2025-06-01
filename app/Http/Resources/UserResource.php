@@ -22,16 +22,16 @@ class UserResource extends JsonResource
             'gender' => $this->gender,
             'address' => $this->address,
             'phone' => $this->phone,
-            'roles' => $this->roles->pluck('name'), 
+            'roles' => $this->roles->pluck('name'),
             'user_type' => $this->user_type,
-            'image' => $this->image
+            'image' => $this->image,
         ];
 
         // Profile (teacher or student)
         if ($this->userable) {
             $profileClass = class_basename($this->userable_type);
             $resourceClass = "App\\Http\\Resources\\{$profileClass}Resource";
-            
+
             if (class_exists($resourceClass)) {
                 $data['profile'] = new $resourceClass($this->userable);
             }

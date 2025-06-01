@@ -29,66 +29,62 @@ class InternshipResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->columns(1)
-            ->schema([
-                Wizard::make([
-                    Wizard\Step::make('Internship Information')
-                        ->icon('heroicon-o-briefcase')
-                        ->schema([
-                            Forms\Components\Select::make('student_id')
-                                ->label('Student')
-                                ->required()
-                                ->options(
-                                    Student::with('user')
-                                        ->where('status', false)
-                                        ->get()
-                                        ->pluck('user.name', 'id')
-                                )
-                                ->searchable()
-                                ->preload(),
-                            Forms\Components\Select::make('teacher_id')
-                                ->label('Teacher')
-                                ->options(
-                                    Teacher::with('user')
-                                        ->get()
-                                        ->pluck('user.name', 'id')
-                                )
-                                ->searchable()
-                                ->preload(),
-                            Forms\Components\Select::make('industry_id')
-                                ->label('Industry')
-                                ->required()
-                                ->options(
-                                    Industry::all()
-                                        ->pluck('name', 'id')
-                                )
-                                ->searchable()
-                                ->preload(),
-                        ]),
-                    Wizard\Step::make('Dates and Image')
-                        ->icon('heroicon-o-calendar')
-                        ->schema([
-                            Forms\Components\FileUpload::make('file')
-                                ->label('File')
-                                ->required()
-                                ->acceptedFileTypes(['application/pdf'])
-                                ->maxFiles(1)
-                                ->downloadable()
-                                ->openable()
-                                ->maxSize(2048)
-                                ->directory('internship-files')
-                                ->visibility('public')
-                                ->columnSpanFull(),
-                            Forms\Components\DatePicker::make('start_date')
-                                ->required(),
-                            Forms\Components\DatePicker::make('end_date')
-                                ->required()
-                                ->afterOrEqual('start_date')
-                        ])->columns(2),
-
-                ])
-            ]);
+        return $form->columns(1)->schema([
+            Wizard::make([
+                Wizard\Step::make('Internship Information')
+                    ->icon('heroicon-o-briefcase')
+                    ->schema([
+                        Forms\Components\Select::make('student_id')
+                            ->label('Student')
+                            ->required()
+                            ->options(
+                                Student::with('user')
+                                    ->where('status', false)
+                                    ->get()
+                                    ->pluck('user.name', 'id'),
+                            )
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('teacher_id')
+                            ->label('Teacher')
+                            ->options(
+                                Teacher::with('user')
+                                    ->get()
+                                    ->pluck('user.name', 'id'),
+                            )
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('industry_id')
+                            ->label('Industry')
+                            ->required()
+                            ->options(Industry::all()->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload(),
+                    ]),
+                Wizard\Step::make('Dates and Image')
+                    ->icon('heroicon-o-calendar')
+                    ->schema([
+                        Forms\Components\FileUpload::make('file')
+                            ->label('File')
+                            ->required()
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->maxFiles(1)
+                            ->downloadable()
+                            ->openable()
+                            ->maxSize(2048)
+                            ->directory('internship-files')
+                            ->visibility('public')
+                            ->columnSpanFull(),
+                        Forms\Components\DatePicker::make(
+                            'start_date',
+                        )->required(),
+                        Forms\Components\DatePicker::make('end_date')
+                            ->required()
+                            ->afterOrEqual('start_date'),
+                    ])
+                    ->columns(2),
+            ]),
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -130,16 +126,21 @@ class InternshipResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->using(function (Model $record, array $data): Model {
-                        return app(InternshipResource\Pages\ManageInternships::class)
-                            ->handleRecordUpdate($record, $data);
-                    }),
-                Tables\Actions\DeleteAction::make()
-                    ->using(function (Model $record): void {
-                        app(InternshipResource\Pages\ManageInternships::class)
-                            ->handleRecordDeletion($record);
-                    }),
+                Tables\Actions\EditAction::make()->using(function (
+                    Model $record,
+                    array $data,
+                ): Model {
+                    return app(
+                        InternshipResource\Pages\ManageInternships::class,
+                    )->handleRecordUpdate($record, $data);
+                }),
+                Tables\Actions\DeleteAction::make()->using(function (
+                    Model $record,
+                ): void {
+                    app(
+                        InternshipResource\Pages\ManageInternships::class,
+                    )->handleRecordDeletion($record);
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

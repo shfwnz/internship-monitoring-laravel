@@ -27,60 +27,64 @@ class UserResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->columns(1)
-            ->schema([
-                Wizard::make([
-                    Wizard\Step::make('User')
-                        ->icon('heroicon-o-user')
-                        ->schema([
-                            Forms\Components\TextInput::make('name')
-                                ->label('Name')
-                                ->required()
-                                ->maxLength(255),
-                            Forms\Components\TextInput::make('email')
-                                ->label('Email')
-                                ->email()
-                                ->required()
-                                ->maxLength(255),
-                            Forms\Components\TextInput::make('phone')
-                                ->label('Phone')
-                                ->tel()
-                                ->required()
-                                ->maxLength(255),
-                            Forms\Components\Select::make('gender')
-                                ->label('Gender')
-                                ->required()
-                                ->options([
-                                    'L' => 'Male',
-                                    'P' => 'Female',
-                                ]),
-                            Forms\Components\Textarea::make('address')
-                                ->label('Address')
-                                ->rows(3)
-                                ->required()
-                                ->maxLength(255)
-                                ->columnSpanFull(),
-                            Forms\Components\TextInput::make('password')
-                                ->label('Password')
-                                ->password()
-                                ->maxLength(255)
-                                ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                                ->dehydrated(fn ($state) => filled($state))
-                                ->required(fn (string $operation): bool => $operation === 'create')
-                                ->columnSpanFull(),
-                        ])->columns(2),
-                    Wizard\Step::make('image')
-                        ->icon('heroicon-o-photo')
-                        ->schema([
-                            Forms\Components\FileUpload::make('image')
-                                ->label('Image')
-                                ->image()
-                                ->required()
-                                ->directory('user-images')
-                                ->columnSpanFull(),
+        return $form->columns(1)->schema([
+            Wizard::make([
+                Wizard\Step::make('User')
+                    ->icon('heroicon-o-user')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Name')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->label('Email')
+                            ->email()
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('phone')
+                            ->label('Phone')
+                            ->tel()
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\Select::make('gender')
+                            ->label('Gender')
+                            ->required()
+                            ->options([
+                                'L' => 'Male',
+                                'P' => 'Female',
+                            ]),
+                        Forms\Components\Textarea::make('address')
+                            ->label('Address')
+                            ->rows(3)
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('password')
+                            ->label('Password')
+                            ->password()
+                            ->maxLength(255)
+                            ->dehydrateStateUsing(
+                                fn($state) => Hash::make($state),
+                            )
+                            ->dehydrated(fn($state) => filled($state))
+                            ->required(
+                                fn(string $operation): bool => $operation ===
+                                    'create',
+                            )
+                            ->columnSpanFull(),
                     ])
-                ])
+                    ->columns(2),
+                Wizard\Step::make('image')
+                    ->icon('heroicon-o-photo')
+                    ->schema([
+                        Forms\Components\FileUpload::make('image')
+                            ->label('Image')
+                            ->image()
+                            ->required()
+                            ->directory('user-images')
+                            ->columnSpanFull(),
+                    ]),
+            ]),
         ]);
     }
 
@@ -94,26 +98,26 @@ class UserResource extends Resource
                     ->width(50)
                     ->rounded()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('name')->searchable(),
+                Tables\Columns\TextColumn::make('email')->searchable(),
                 Tables\Columns\TextColumn::make('gender')
                     ->label('Gender')
-                    ->formatStateUsing(fn ($state) => $state === 'L' ? 'Male' : 'Female')
+                    ->formatStateUsing(
+                        fn($state) => $state === 'L' ? 'Male' : 'Female',
+                    )
                     ->sortable(),
-                Tables\Columns\TextColumn::make('phone')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('phone')->searchable(),
                 Tables\Columns\TextColumn::make('user.roles.name')
                     ->badge()
                     ->label('Role')
                     ->getStateUsing(function ($record) {
                         $roles = $record->roles()->get();
-                        
+
                         if ($roles->isEmpty() && $record->userable) {
-                            $roles = $record->userable->user->roles ?? collect();
+                            $roles =
+                                $record->userable->user->roles ?? collect();
                         }
-                        
+
                         return $roles->pluck('name')->toArray();
                     }),
                 Tables\Columns\TextColumn::make('address')
@@ -146,9 +150,14 @@ class UserResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['value'],
-                            fn (Builder $query, $value): Builder => $query->whereHas('roles', function (Builder $query) use ($value) {
+                            fn(
+                                Builder $query,
+                                $value,
+                            ): Builder => $query->whereHas('roles', function (
+                                Builder $query,
+                            ) use ($value) {
                                 $query->where('roles.id', $value);
-                            })
+                            }),
                         );
                     }),
             ])
@@ -171,4 +180,3 @@ class UserResource extends Resource
         ];
     }
 }
-

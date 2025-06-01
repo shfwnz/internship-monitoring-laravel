@@ -54,4 +54,3 @@ class BusinessFieldFactory extends Factory
         ];
     }
 }
-

@@ -3,7 +3,10 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "format:php": "prettier --write '**/*.php'"
     },
     "devDependencies": {
         "@prettier/plugin-php": "^0.22.4",
