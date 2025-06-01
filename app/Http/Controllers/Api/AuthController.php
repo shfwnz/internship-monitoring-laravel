@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 // Resources
 use App\Models\User;
@@ -74,7 +74,7 @@ class AuthController extends Controller
             'message' => 'Login successful',
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->guard('api')->factory()->getTTL() * 60,
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
             'user' => $user,
             'profile' => $profileData,
             'roles' => $user->getRoleNames(),
@@ -134,9 +134,7 @@ class AuthController extends Controller
                 ]);
 
                 $user = $student->user()->create($userData);
-                $role = Role::findByName('student', 'api');
-                $user->assignRole($role);
-
+                $user->assignRole('student');
                 $profileId = $student->id;
             } else {
                 $teacher = Teacher::create([
@@ -144,9 +142,7 @@ class AuthController extends Controller
                 ]);
 
                 $user = $teacher->user()->create($userData);
-                $role = Role::findByName('teacher', 'api');
-                $user->assignRole($role);
-
+                $user->assignRole('teacher');
                 $profileId = $teacher->id;
             }
 
@@ -177,7 +173,7 @@ class AuthController extends Controller
         }
     }
 
-    public function logout(Request $request)
+    public function logout()
     {
         auth()->guard('api')->logout();
 
