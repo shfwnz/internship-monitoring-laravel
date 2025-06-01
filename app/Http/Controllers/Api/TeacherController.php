@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 // Resources
 use App\Http\Resources\TeacherResource;
 use App\Models\Teacher;
-use App\Models\User;
 
 class TeacherController extends Controller
 {

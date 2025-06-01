@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 // Resources
 use App\Http\Resources\StudentResource;
 use App\Models\Student;
-use App\Models\User;
 
 class StudentController extends Controller
 {
@@ -48,9 +47,9 @@ class StudentController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required|string|min:8',
-                'gender' => 'required|in:L,P',
-                'phone' => 'required|string|unique:users,phone',
-                'address' => 'required|string',
+                'gender' => 'nullable|in:L,P',
+                'phone' => 'nullable|string|unique:users,phone',
+                'address' => 'nullable|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ],
             [
@@ -74,8 +73,10 @@ class StudentController extends Controller
         DB::beginTransaction();
 
         try {
-            $image = $request->file('image');
-            $image->storeAs('user-images', $image->hashName());
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imagePath = $image->store('student-images', 'public');
+            }
 
             // Create Student
             $student = Student::create([
@@ -93,7 +94,7 @@ class StudentController extends Controller
                     'gender' => $request->gender,
                     'phone' => $request->phone,
                     'address' => $request->address,
-                    'image' => $image->hashName(),
+                    'image' => $imagePath,
                 ])
                 ->assignRole('student');
 

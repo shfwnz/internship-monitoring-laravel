@@ -15,22 +15,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        app()[
-            \Spatie\Permission\PermissionRegistrar::class
-        ]->forgetCachedPermissions();
+        // Clear the permission cache
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        $adminRole = Role::firstOrCreate(['name' => 'super_admin']);
-        $teacherRole = Role::firstOrCreate(['name' => 'teacher']);
-        $studentRole = Role::firstOrCreate(['name' => 'student']);
+        // Create roles with explicit guard names
+        Role::query()->delete(); // Reset roles
+        
+        $adminRole = Role::create(['name' => 'super_admin', 'guard_name' => 'web']);
+        $teacherRole = Role::create(['name' => 'teacher', 'guard_name' => 'api']);
+        $studentRole = Role::create(['name' => 'student', 'guard_name' => 'api']);
 
         $adminRole->givePermissionTo(Permission::all());
-
-        $teacherRole->givePermissionTo(
-            Permission::where('name', 'like', '%industry%')->get(),
-        );
-        $studentRole->givePermissionTo(
-            Permission::where('name', 'like', '%industry%')->get(),
-        );
 
         $admin = User::factory()
             ->create([

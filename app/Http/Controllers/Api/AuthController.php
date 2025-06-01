@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 
 // Resources
 use App\Models\User;
@@ -15,6 +16,8 @@ use App\Models\Teacher;
 
 class AuthController extends Controller
 {
+    protected $user;
+
     public function __construct(User $user)
     {
         // model as dependency injection
@@ -56,13 +59,25 @@ class AuthController extends Controller
 
     protected function respondWithToken($token)
     {
+        $user = auth()->guard('api')->user();
+        
+        // Load the profile data based on role
+        $profileData = null;
+        if ($user->hasRole('student')) {
+            $profileData = $user->profile; 
+        } elseif ($user->hasRole('teacher')) {
+            $profileData = $user->profile; 
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->guard('api')->factory()->getTTL() * 60,
-            'user' => auth()->guard('api')->user(),
+            'user' => $user,
+            'profile' => $profileData,
+            'roles' => $user->getRoleNames(),
         ]);
     }
 
@@ -119,7 +134,8 @@ class AuthController extends Controller
                 ]);
 
                 $user = $student->user()->create($userData);
-                $user->assignRole('student');
+                $role = Role::findByName('student', 'api');
+                $user->assignRole($role);
 
                 $profileId = $student->id;
             } else {
@@ -128,7 +144,8 @@ class AuthController extends Controller
                 ]);
 
                 $user = $teacher->user()->create($userData);
-                $user->assignRole('teacher');
+                $role = Role::findByName('teacher', 'api');
+                $user->assignRole($role);
 
                 $profileId = $teacher->id;
             }
@@ -155,7 +172,7 @@ class AuthController extends Controller
                     'message' => 'Registration failed',
                     'errors' => $e->getMessage(),
                 ],
-                422,
+                500,
             );
         }
     }

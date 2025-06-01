@@ -3,12 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Student extends Model
 {
-    use HasRoles, HasFactory;
+    use HasFactory;
     protected $fillable = ['nis', 'status'];
 
     public function user()
@@ -18,6 +17,6 @@ class Student extends Model
 
     public function pkl()
     {
-        return $this->hasMany(Pkl::class);
+        return $this->hasMany(Internship::class);
     }
 }
