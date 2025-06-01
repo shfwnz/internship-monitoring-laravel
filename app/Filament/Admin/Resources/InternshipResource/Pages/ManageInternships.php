@@ -44,6 +44,7 @@ class ManageInternships extends ManageRecords
                         ->send();
 
                     $this->halt();
+                    throw $e;
                 }
             }),
         ];
@@ -75,6 +76,7 @@ class ManageInternships extends ManageRecords
                 ->send();
 
             $this->halt();
+            return $record;
         }
     }
 

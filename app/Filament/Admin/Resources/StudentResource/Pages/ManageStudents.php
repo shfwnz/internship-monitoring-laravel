@@ -134,8 +134,8 @@ class ManageStudents extends ManageRecords
         DB::beginTransaction();
 
         try {
-            $record->user->delete();
             $record->delete();
+            $record->user?->delete();
 
             DB::commit();
 

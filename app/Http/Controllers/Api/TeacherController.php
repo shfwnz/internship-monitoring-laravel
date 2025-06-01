@@ -155,10 +155,10 @@ class TeacherController extends Controller
 
                 // User
                 'name' => 'sometimes|string|max:255',
-                'email' => 'sometimes|email|unique:users,email',
+                'email' => 'sometimes|email|unique:users,email,' . $teacher->user->id,
                 'password' => 'sometimes|string|min:8',
                 'gender' => 'sometimes|in:L,P',
-                'phone' => 'sometimes|string|unique:users,phone',
+                'phone' => 'sometimes|string|unique:users,phone,' . $teacher->user->id,
                 'address' => 'sometimes|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ],

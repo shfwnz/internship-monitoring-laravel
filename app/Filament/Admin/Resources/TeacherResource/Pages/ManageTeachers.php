@@ -62,6 +62,7 @@ class ManageTeachers extends ManageRecords
                         ->send();
 
                     $this->halt();
+                    throw $e;
                 }
             }),
         ];
@@ -118,6 +119,7 @@ class ManageTeachers extends ManageRecords
                 ->send();
 
             $this->halt();
+            return $record;
         }
     }
 
