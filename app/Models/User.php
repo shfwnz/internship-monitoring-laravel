@@ -9,13 +9,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Collection;
 
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
-    protected $guard_name = 'api';
+    // protected $guard_name = 'api';
 
     /**
      * The attributes that are mass assignable.
@@ -75,5 +76,14 @@ class User extends Authenticatable implements JWTSubject
             return strtolower(class_basename($this->userable_type));
         }
         return 'super_admin';
+    }
+
+    public function getGuardNames(): Collection
+    {
+        if ($this->getUserTypeAttribute() === 'super_admin') {
+            return collect(['web', 'api']);
+        }
+
+        return collect(['api']);
     }
 }
