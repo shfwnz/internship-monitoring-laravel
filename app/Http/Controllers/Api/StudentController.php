@@ -200,17 +200,22 @@ class StudentController extends Controller
             // Update Student
             $student->update($validator->validated());
 
+            // Prepare user data for update
+            $userData = $request->only([
+                'name',
+                'email',
+                'gender',
+                'phone',
+                'address',
+            ]);
+
+            // Handle password separately
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
+            }
+
             // Update User
-            $student->user->update(
-                $request->only([
-                    'name',
-                    'email',
-                    'password',
-                    'gender',
-                    'phone',
-                    'address',
-                ]),
-            );
+            $student->user->update($userData);
 
             DB::commit();
 
@@ -218,7 +223,7 @@ class StudentController extends Controller
                 [
                     'success' => true,
                     'message' => 'Data has been updated',
-                    'updated_data' => new StudentResource($student),
+                    'updated_data' => new StudentResource($student->fresh(['user'])),
                 ],
                 200,
             );
