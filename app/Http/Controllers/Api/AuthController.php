@@ -60,13 +60,13 @@ class AuthController extends Controller
     protected function respondWithToken($token)
     {
         $user = auth()->guard('api')->user();
-        
+
         // Load the profile data based on role
         $profileData = null;
         if ($user->hasRole('student')) {
-            $profileData = $user->profile; 
+            $profileData = $user->profile;
         } elseif ($user->hasRole('teacher')) {
-            $profileData = $user->profile; 
+            $profileData = $user->profile;
         }
 
         return response()->json([

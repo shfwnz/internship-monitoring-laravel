@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 
 // Resources
 use App\Http\Resources\InternshipResource;
@@ -21,100 +22,80 @@ class InternshipController extends Controller
      */
     public function index()
     {
-        try {
-            $internship = Internship::with(
-                'student.user',
-                'teacher.user',
-                'industry',
-                'industry.business_field',
-            )->get();
+        $internship = Internship::with(
+            'student.user',
+            'teacher.user',
+            'industry',
+            'industry.business_field',
+        )->get();
 
-            return response()->json(
-                [
-                    'success' => true,
-                    'message' => 'success',
-                    'all_data' => InternshipResource::collection($internship),
-                ],
-                200,
-            );
-        } catch (Exception $e) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Failed to retrieve internships',
-                    'error' => $e->getMessage(),
-                ],
-                500,
-            );
-        }
+
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'success',
+                'all_data' => InternshipResource::collection($internship),
+            ],
+            200,
+        );
     }
 
     public function myInternship()
     {
-        try {
-            $user = auth()->user();
 
-            if (!$user) {
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'Unauthenticated',
-                    ],
-                    401,
-                );
-            }
+        $user = Auth::user();
 
-            $user->load('userable');
-
-            if (!$user->userable || !($user->userable instanceof Student)) {
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'Student profile not found',
-                    ],
-                    404,
-                );
-            }
-
-            $student = $user->userable;
-
-            $internship = Internship::with(
-                'student.user',
-                'teacher.user',
-                'industry',
-                'industry.business_field',
-            )
-                ->where('student_id', $student->id)
-                ->first();
-
-            if (!$internship) {
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'No internship found for this student',
-                    ],
-                    404,
-                );
-            }
-
-            return response()->json(
-                [
-                    'success' => true,
-                    'message' => 'Internship data retrieved successfully',
-                    'data' => new InternshipResource($internship),
-                ],
-                200,
-            );
-        } catch (Exception $e) {
+        if (!$user) {
             return response()->json(
                 [
                     'success' => false,
-                    'message' => 'Failed to retrieve internship data',
-                    'error' => $e->getMessage(),
+                    'message' => 'Unauthenticated',
                 ],
-                500,
+                401,
             );
         }
+
+        $user->load('userable');
+
+        if (!$user->userable || !($user->userable instanceof Student)) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Student profile not found',
+                ],
+                404,
+            );
+        }
+
+        $student = $user->userable;
+
+        $internship = Internship::with(
+            'student.user',
+            'teacher.user',
+            'industry',
+            'industry.business_field',
+        )
+            ->where('student_id', $student->id)
+            ->first();
+
+        if (!$internship) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'No internship found for this student',
+                ],
+                404,
+            );
+        }
+
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'Internship data retrieved successfully',
+                'data' => new InternshipResource($internship),
+            ],
+            200,
+        );
     }
 
     /**
@@ -129,7 +110,7 @@ class InternshipController extends Controller
             'industry_id' => 'required|integer|exists:industries,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
-            'file' => 'required|file|mimes:pdf|max:2048', // Max 2MB
+            'file' => 'required|file|mimes:pdf|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -240,31 +221,21 @@ class InternshipController extends Controller
      */
     public function show(string $id)
     {
-        try {
-            $internship = Internship::with(
-                'student.user',
-                'teacher.user',
-                'industry',
-            )->findOrFail($id);
 
-            return response()->json(
-                [
-                    'success' => true,
-                    'message' => 'Internship found successfully',
-                    'data' => new InternshipResource($internship),
-                ],
-                200,
-            );
-        } catch (Exception $e) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Internship not found',
-                    'error' => $e->getMessage(),
-                ],
-                404,
-            );
-        }
+        $internship = Internship::with(
+            'student.user',
+            'teacher.user',
+            'industry',
+        )->findOrFail($id);
+
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'Internship found successfully',
+                'data' => new InternshipResource($internship),
+            ],
+            200,
+        );
     }
 
     /**
@@ -273,30 +244,31 @@ class InternshipController extends Controller
     public function update(Request $request, string $id)
     {
         // Implementation for update method
+        
+        $validator = Validator::make($request->all(), [
+            'teacher_id' => 'nullable|integer|exists:teachers,id',
+            'industry_id' =>
+            'sometimes|required|integer|exists:industries,id',
+            'start_date' => 'sometimes|required|date',
+            'end_date' => 'sometimes|required|date|after:start_date',
+            'file' => 'nullable|file|mimes:pdf|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                ],
+                422,
+            );
+        }
+        
+        DB::beginTransaction();
+        
         try {
             $internship = Internship::findOrFail($id);
-
-            $validator = Validator::make($request->all(), [
-                'teacher_id' => 'nullable|integer|exists:teachers,id',
-                'industry_id' =>
-                    'sometimes|required|integer|exists:industries,id',
-                'start_date' => 'sometimes|required|date',
-                'end_date' => 'sometimes|required|date|after:start_date',
-                'file' => 'nullable|file|mimes:pdf|max:2048',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'Validation failed',
-                        'errors' => $validator->errors(),
-                    ],
-                    422,
-                );
-            }
-
-            DB::beginTransaction();
 
             $updateData = $request->only([
                 'teacher_id',
@@ -364,10 +336,10 @@ class InternshipController extends Controller
      */
     public function destroy(string $id)
     {
+        DB::beginTransaction();
+
         try {
             $internship = Internship::findOrFail($id);
-
-            DB::beginTransaction();
 
             // Delete associated file
             if (

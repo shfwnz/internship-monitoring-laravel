@@ -73,7 +73,7 @@ class StudentController extends Controller
         DB::beginTransaction();
 
         try {
-            $imagePath = null;  
+            $imagePath = null;
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
                 $imagePath = $image->store('user-images', 'public');
@@ -184,7 +184,7 @@ class StudentController extends Controller
         DB::beginTransaction();
 
         try {
-            $imagePath = null;  
+            $imagePath = null;
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
                 $imagePath = $image->store('student-images', 'public');
@@ -230,7 +230,9 @@ class StudentController extends Controller
                 [
                     'success' => true,
                     'message' => 'Data has been updated',
-                    'updated_data' => new StudentResource($student->fresh(['user'])),
+                    'updated_data' => new StudentResource(
+                        $student->fresh(['user']),
+                    ),
                 ],
                 200,
             );

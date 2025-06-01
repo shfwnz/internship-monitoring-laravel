@@ -73,7 +73,7 @@ class TeacherController extends Controller
         DB::beginTransaction();
 
         try {
-            $imagePath = null;  
+            $imagePath = null;
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
                 $imagePath = $image->store('user-images', 'public');
@@ -104,7 +104,9 @@ class TeacherController extends Controller
                 [
                     'success' => true,
                     'message' => 'Data has been created',
-                    'created_data' => new TeacherResource($teacher->load('user')),
+                    'created_data' => new TeacherResource(
+                        $teacher->load('user'),
+                    ),
                 ],
                 200,
             );
@@ -181,7 +183,7 @@ class TeacherController extends Controller
         DB::beginTransaction();
 
         try {
-            $imagePath = null;  
+            $imagePath = null;
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
                 $imagePath = $image->store('user-images', 'public');
