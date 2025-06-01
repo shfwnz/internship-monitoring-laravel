@@ -184,6 +184,7 @@ class StudentController extends Controller
         DB::beginTransaction();
 
         try {
+            $imagePath = null;  
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
                 $imagePath = $image->store('student-images', 'public');
@@ -194,6 +195,12 @@ class StudentController extends Controller
 
                 $student->user->update([
                     'image' => $imagePath,
+                ]);
+            }
+
+            if ($request->has('nis')) {
+                $student->update([
+                    'nis' => $request->nis,
                 ]);
             }
 

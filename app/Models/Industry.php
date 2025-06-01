@@ -20,7 +20,7 @@ class Industry extends Model
 
     public function pkl()
     {
-        return $this->hasMany(Pkl::class);
+        return $this->hasMany(Internship::class);
     }
 
     public function business_field()

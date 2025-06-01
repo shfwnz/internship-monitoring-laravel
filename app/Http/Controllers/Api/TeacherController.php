@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 // Resources
@@ -46,9 +47,9 @@ class TeacherController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required|string|min:8',
-                'gender' => 'required|in:L,P',
-                'phone' => 'required|string|unique:users,phone',
-                'address' => 'required|string',
+                'gender' => 'nullable|in:L,P',
+                'phone' => 'nullable|string|unique:users,phone',
+                'address' => 'nullable|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ],
             [
@@ -72,8 +73,11 @@ class TeacherController extends Controller
         DB::beginTransaction();
 
         try {
-            $image = $request->file('image');
-            $image->storeAs('user-images', $image->hashName());
+            $imagePath = null;  
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imagePath = $image->store('user-images', 'public');
+            }
 
             // Create Teacher
             $teacher = Teacher::create([
@@ -90,7 +94,7 @@ class TeacherController extends Controller
                     'gender' => $request->gender,
                     'phone' => $request->phone,
                     'address' => $request->address,
-                    'image' => $image->hashName(),
+                    'image' => $imagePath,
                 ])
                 ->assignRole('teacher');
 
@@ -100,7 +104,7 @@ class TeacherController extends Controller
                 [
                     'success' => true,
                     'message' => 'Data has been created',
-                    'created_data' => new TeacherResource($teacher),
+                    'created_data' => new TeacherResource($teacher->load('user')),
                 ],
                 200,
             );
@@ -122,7 +126,7 @@ class TeacherController extends Controller
      */
     public function show(string $id)
     {
-        $teacher = $teacher->with('user')->findOrFail($id);
+        $teacher = Teacher::with('user')->findOrFail($id);
 
         return response()->json(
             [
@@ -145,15 +149,15 @@ class TeacherController extends Controller
             $request->all(),
             [
                 // Teacher
-                'nip' => 'required|string|unique:teachers,nip',
+                'nip' => "sometimes|string|unique:teachers,nip,{$teacher->id}",
 
                 // User
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:8',
-                'gender' => 'required|in:L,P',
-                'phone' => 'required|string|unique:users,phone',
-                'address' => 'required|string',
+                'name' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|unique:users,email',
+                'password' => 'sometimes|string|min:8',
+                'gender' => 'sometimes|in:L,P',
+                'phone' => 'sometimes|string|unique:users,phone',
+                'address' => 'sometimes|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ],
             [
@@ -177,11 +181,23 @@ class TeacherController extends Controller
         DB::beginTransaction();
 
         try {
-            $image = $request->file('image');
-            if ($image) {
-                $image->storeAs('user-images', $image->hashName());
+            $imagePath = null;  
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imagePath = $image->store('user-images', 'public');
+
+                if ($teacher->user->image) {
+                    Storage::delete('public/' . $teacher->user->image);
+                }
+
                 $teacher->user->update([
-                    'image' => $image->hashName(),
+                    'image' => $imagePath,
+                ]);
+            }
+
+            if ($request->has('nip')) {
+                $teacher->update([
+                    'nip' => $request->nip,
                 ]);
             }
 
@@ -189,17 +205,19 @@ class TeacherController extends Controller
             $teacher->update($validator->validated());
 
             // Update User
-            $teacher->user->update(
-                $request->only([
-                    'name',
-                    'email',
-                    'password',
-                    'gender',
-                    'phone',
-                    'address',
-                    'image',
-                ]),
-            );
+            $userData = $request->only([
+                'name',
+                'email',
+                'gender',
+                'phone',
+                'address',
+            ]);
+
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
+            }
+
+            $teacher->user->update($userData);
 
             DB::commit();
 

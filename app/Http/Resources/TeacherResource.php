@@ -25,7 +25,7 @@ class TeacherResource extends JsonResource
                         'gender' => $this->user->gender,
                         'phone' => $this->user->phone,
                         'address' => $this->user->address,
-                        'image' => $this->image,
+                        'image' => $this->user->image,
                         'role' => 'teacher',
                     ]
                     : null;
