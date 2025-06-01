@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 // Resources
@@ -20,7 +21,10 @@ class StudentController extends Controller
      */
     public function index()
     {
-        $students = Student::with('user')->get();
+        $user = Auth::user();
+        $students = $user->hasPermissionTo('view_any_student') 
+            ? Student::with('user')->get()
+            : Student::with('user')->where('user_id', $user->id)->get();
 
         return response()->json(
             [

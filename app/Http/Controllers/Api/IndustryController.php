@@ -40,6 +40,17 @@ class IndustryController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        if (!$user->hasPermissionTo('create_industry')) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'You are not authorized to create an industry',
+                ],
+                403,
+            );
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
             'business_field_id' => 'required|integer|exists:business_fields,id',
