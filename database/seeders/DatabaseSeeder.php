@@ -23,6 +23,9 @@ class DatabaseSeeder extends Seeder
 
         $adminRole->givePermissionTo(Permission::all());
 
+        $teacherRole->givePermissionTo(Permission::where('name', 'like', '%industry%')->get());
+        $studentRole->givePermissionTo(Permission::where('name', 'like', '%industry%')->get());
+
         $admin = User::factory()->create([
             'name' => 'Super Admin',
             'email' => 'superadmin@example.com',
