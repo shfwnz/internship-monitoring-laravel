@@ -73,9 +73,10 @@ class StudentController extends Controller
         DB::beginTransaction();
 
         try {
+            $imagePath = null;  
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
-                $imagePath = $image->store('student-images', 'public');
+                $imagePath = $image->store('user-images', 'public');
             }
 
             // Create Student
@@ -149,7 +150,7 @@ class StudentController extends Controller
             $request->all(),
             [
                 // Student
-                'nis' => 'sometimes|string|unique:students,nis,' . $student->id,
+                'nis' => "sometimes|string|unique:students,nis,{$student->id}",
 
                 // User
                 'name' => 'sometimes|string|max:255',
