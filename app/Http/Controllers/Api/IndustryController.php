@@ -4,12 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\DB;
 
 // Resources
 use App\Http\Resources\IndustryResource;
@@ -71,16 +68,25 @@ class IndustryController extends Controller
             );
         }
 
-        $industry = Industry::create($validator->validated());
+        DB::beginTransaction();
 
-        return response()->json(
-            [
-                'success' => true,
-                'message' => 'Data has been created',
-                'created_data' => new IndustryResource($industry),
-            ],
-            201,
-        );
+        try {
+            $industry = Industry::create($validator->validated());
+
+            DB::commit();
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'Data has been created',
+                    'created_data' => new IndustryResource($industry),
+                ],
+                201,
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 
     /**
@@ -111,9 +117,8 @@ class IndustryController extends Controller
             'name' => 'required|string',
             'business_field_id' => 'required|integer|exists:business_fields,id',
             'address' => 'required|string',
-            'phone' => 'required|unique:industries,phone,' . $industry->id,
-            'email' =>
-                'required|email|unique:industries,email,' . $industry->id,
+            'phone' => "required|unique:industries,phone,{$industry->id}",
+            'email' => "required|email|unique:industries,email,{$industry->id}",
             'website' => 'nullable|url',
         ]);
 
@@ -128,16 +133,25 @@ class IndustryController extends Controller
             );
         }
 
-        $industry->update($validator->validated());
+        DB::beginTransaction();
 
-        return response()->json(
-            [
-                'success' => true,
-                'message' => 'Data has been updated',
-                'updated_data' => new IndustryResource($industry),
-            ],
-            200,
-        );
+        try {
+            $industry->update($validator->validated());
+
+            DB::commit();
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'Data has been updated',
+                    'updated_data' => new IndustryResource($industry),
+                ],
+                200,
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 
     /**

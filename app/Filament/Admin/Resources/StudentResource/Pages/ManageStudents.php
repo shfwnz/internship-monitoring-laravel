@@ -9,6 +9,7 @@ use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 // Model
 use App\Models\User;
@@ -54,7 +55,7 @@ class ManageStudents extends ManageRecords
 
                     return $student->load('user');
                 } catch (\Exception $e) {
-                    \Log::error($e);
+                    Log::error($e);
                     DB::rollBack();
 
                     Notification::make()
@@ -66,6 +67,7 @@ class ManageStudents extends ManageRecords
                         ->send();
 
                     $this->halt();
+                    throw $e;
                 }
             }),
         ];
@@ -123,6 +125,7 @@ class ManageStudents extends ManageRecords
                 ->send();
 
             $this->halt();
+            return $record;
         }
     }
 
