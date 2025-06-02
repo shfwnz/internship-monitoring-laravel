@@ -18,7 +18,7 @@ class Industry extends Model
         'website',
     ];
 
-    public function pkl()
+    public function internships()
     {
         return $this->hasMany(Internship::class);
     }

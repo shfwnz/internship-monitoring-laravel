@@ -88,14 +88,12 @@ class AuthController extends Controller
             [
                 'role' => 'required|in:student,teacher',
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
+                'email' => 'required|email',
                 'password' => 'required|string|min:8',
                 // Student
-                'nis' =>
-                    'required_if:role,student|string|unique:students,nis|nullable',
+                'nis' => 'required_if:role,student|string|nullable',
                 // Teacher
-                'nip' =>
-                    'required_if:role,teacher|string|unique:teachers,nip|nullable',
+                'nip' => 'required_if:role,teacher|string|nullable',
             ],
             [
                 'nis.required_if' => 'NIS required if role is student',
@@ -120,28 +118,67 @@ class AuthController extends Controller
         try {
             $userData = [
                 'name' => $request->name,
-                'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'gender' => null,
-                'phone' => null,
-                'address' => null,
             ];
 
-            if ($request->role === 'student') {
-                $student = Student::create([
-                    'nis' => $request->nis,
-                    'status' => false,
-                ]);
+            // Find existing user
+            $user = User::where('email', $request->email)->first();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User with this email not found',
+                ], 404);
+            }
 
-                $user = $student->user()->create($userData);
+            if ($request->role === 'student') {
+                // Try to find existing student with this NIS
+                $student = Student::where('nis', $request->nis)->first();
+
+                if ($student) {
+                    // Update existing student
+                    $student->update([
+                        'status' => false,
+                    ]);
+                } else {
+                    // Create new student if none exists
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Student with this NIS not found',
+                    ], 404);
+                }
+
+                // Update existing user
+                $user->update([
+                    'name' => $request->name,
+                    'password' => Hash::make($request->password),
+                    'userable_id' => $student->id,
+                    'userable_type' => Student::class,
+                ]);
                 $user->assignRoleWithGuard('student');
                 $profileId = $student->id;
             } else {
-                $teacher = Teacher::create([
-                    'nip' => $request->nip,
-                ]);
+                // Try to find existing teacher with this NIP
+                $teacher = Teacher::where('nip', $request->nip)->first();
 
-                $user = $teacher->user()->create($userData);
+                if ($teacher) {
+                    // Update existing teacher if needed
+                    // Add any fields that need to be updated
+                } else {
+                    // Create new teacher if none exists
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Teacher with this NIP not found',
+                    ], 404);
+                }
+
+                // Update existing user
+                $user->update([
+                    'name' => $request->name,
+                    'password' => Hash::make($request->password),
+                    'userable_id' => $teacher->id,
+                    'userable_type' => Teacher::class,
+                ]);
                 $user->assignRoleWithGuard('teacher');
                 $profileId = $teacher->id;
             }

@@ -13,7 +13,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Fieldset;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+use Filament\Notifications\Notification;
+use Spatie\Permission\Models\Role;
 
 // Model
 use App\Models\User;
@@ -33,54 +37,66 @@ class StudentResource extends Resource
                 Wizard\Step::make('User Information')
                     ->icon('heroicon-o-user')
                     ->schema([
-                        Forms\Components\TextInput::make('user.name')
-                            ->label('Name')
-                            ->required()
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('user.email')
-                            ->label('Email')
-                            ->email()
-                            ->required()
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('user.phone')
-                            ->label('Phone')
-                            ->required()
-                            ->maxLength(255),
-                        Forms\Components\Select::make('user.gender')
-                            ->label('Gender')
-                            ->required()
-                            ->options([
-                                'L' => 'Male',
-                                'P' => 'Female',
-                            ]),
-                        Forms\Components\Textarea::make('user.address')
-                            ->label('Address')
-                            ->rows(3)
-                            ->required()
-                            ->maxLength(255)
-                            ->columnSpanFull(),
-                        Forms\Components\TextInput::make('user.password')
-                            ->label('Password')
-                            ->password()
-                            ->required(
-                                fn(string $context): bool => $context ===
-                                    'create',
-                            )
-                            ->dehydrated(fn($state) => filled($state))
-                            ->maxLength(255)
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
+                        Fieldset::make('User Information')
+                            ->relationship('user')
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Name')
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('email')
+                                    ->label('Email')
+                                    ->email()
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('phone')
+                                    ->label('Phone')
+                                    ->required()
+                                    ->maxLength(15)
+                                    ->tel()
+                                    ->prefix('+62')
+                                    ->regex('/^\+62[8][0-9]{8,11}$/')
+                                    ->helperText('Format: +628xxxxxxxxxx'),
+                                Forms\Components\Select::make('gender')
+                                    ->label('Gender')
+                                    ->required()
+                                    ->options([
+                                        'L' => 'Male',
+                                        'P' => 'Female',
+                                    ]),
+                                Forms\Components\Textarea::make('address')
+                                    ->label('Address')
+                                    ->rows(3)
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->columnSpanFull(),
+                                Forms\Components\TextInput::make('password')
+                                    ->label('Password')
+                                    ->password()
+                                    ->required(
+                                        fn(string $context): bool => $context ===
+                                            'create',
+                                    )
+                                    ->dehydrated(fn($state) => filled($state))
+                                    ->maxLength(255)
+                                    ->columnSpanFull(),
+                            ])
+                            ->columns(2),
+                    ])->columnSpanFull(),
 
                 Wizard\Step::make('Student Information')
                     ->icon('heroicon-o-user-group')
                     ->schema([
-                        Forms\Components\FileUpload::make('user.image')
-                            ->label('Image')
-                            ->image()
-                            ->required()
-                            ->directory('student-images')
-                            ->columnSpanFull(),
+                        Fieldset::make('Student Information')
+                            ->relationship('user')
+                            ->schema([
+                                Forms\Components\FileUpload::make('image')
+                                    ->label('Image')
+                                    ->image()
+                                    ->required()
+                                    ->directory('student-images')
+                                    ->columnSpanFull(),
+                            ]),
                         Forms\Components\TextInput::make('nis')
                             ->label('NIS')
                             ->required()
@@ -88,8 +104,9 @@ class StudentResource extends Resource
                             ->unique(Student::class, 'nis', ignoreRecord: true)
                             ->columnSpanFull(),
                     ])
-                    ->columns(2),
-            ])->columnSpanFull(),
+                    ->columnSpanFull(),
+            ])
+                ->columnSpanFull(),
         ]);
     }
 
@@ -173,25 +190,31 @@ class StudentResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->using(function (
-                    Model $record,
-                    array $data,
-                ): Model {
-                    return app(
-                        StudentResource\Pages\ManageStudents::class,
-                    )->handleRecordUpdate($record, $data);
-                }),
-                Tables\Actions\DeleteAction::make()->using(function (
-                    Model $record,
-                ): void {
-                    app(
-                        StudentResource\Pages\ManageStudents::class,
-                    )->handleRecordDeletion($record);
-                }),
+                // Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make()->successNotificationTitle('Student updated successfully'),
+                Tables\Actions\DeleteAction::make()
+                    ->successNotificationTitle('Student deleted successfully')
+                    ->after(function (Model $record): void {
+                        $record->user->delete();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->successNotificationTitle('Student deleted successfully')
+                        ->using(function (Collection $record): void {
+                            foreach ($record as $student) {
+                                if ($student->internships()->exists()) {
+                                    Notification::make()
+                                        ->title('Cannot delete ' . $student->user->name . ' with active internship records.')
+                                        ->danger()
+                                        ->send();
+                                    continue;
+                                }
+                                $student->delete();
+                                $student->user->delete();
+                            }
+                        }),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -207,5 +230,10 @@ class StudentResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->with(['user']);
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
     }
 }

@@ -21,7 +21,7 @@ class IndustryFactory extends Factory
             'name' => $this->faker->company,
             'business_field_id' => BusinessField::inRandomOrder()->first()->id,
             'address' => $this->faker->address,
-            'phone' => $this->faker->unique()->numerify('08##########'),
+            'phone' => $this->faker->unique()->numerify('+628#########'),
             'email' => $this->faker->unique()->safeEmail(),
             'website' => 'https://' . $this->faker->domainWord . '.com',
         ];

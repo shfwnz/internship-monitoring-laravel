@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\Wizard;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
+use Filament\Notifications\Notification;
 
 // Model
 use App\Models\Industry;
@@ -119,7 +121,20 @@ class IndustryResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->successNotificationTitle('Industry deleted successfully')
+                        ->using(function (Collection $record): void {
+                            foreach ($record as $industry) {
+                                if ($industry->internships()->exists()) {
+                                    Notification::make()
+                                        ->title("Cannot delete {$industry->name} with active internship records.")
+                                        ->danger()
+                                        ->send();
+                                    continue;
+                                }
+                                $industry->delete();
+                            }
+                        }),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -130,5 +145,10 @@ class IndustryResource extends Resource
         return [
             'index' => Pages\ManageIndustries::route('/'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
     }
 }

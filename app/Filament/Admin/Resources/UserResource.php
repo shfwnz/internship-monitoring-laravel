@@ -3,7 +3,6 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\UserResource\Pages;
-use App\Filament\Admin\Resources\UserResource\RelationManagers;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -11,8 +10,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Wizard;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Eloquent\Model;
 
 // Model
 use App\Models\User;
@@ -29,7 +28,7 @@ class UserResource extends Resource
     {
         return $form->columns(1)->schema([
             Wizard::make([
-                Wizard\Step::make('User')
+                Wizard\Step::make('User Information')
                     ->icon('heroicon-o-user')
                     ->schema([
                         Forms\Components\TextInput::make('name')
@@ -43,9 +42,12 @@ class UserResource extends Resource
                             ->maxLength(255),
                         Forms\Components\TextInput::make('phone')
                             ->label('Phone')
-                            ->tel()
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(15)
+                            ->tel()
+                            ->prefix('+62')
+                            ->regex('/^\+62[8][0-9]{8,11}$/')
+                            ->helperText('Format: +628xxxxxxxxxx'),
                         Forms\Components\Select::make('gender')
                             ->label('Gender')
                             ->required()
@@ -71,6 +73,12 @@ class UserResource extends Resource
                                 fn(string $operation): bool => $operation ===
                                     'create',
                             )
+                            ->columnSpanFull(),
+                        Forms\Components\Select::make('roles')
+                            ->label('Role')
+                            ->options(Role::all()->pluck('name', 'name'))
+                            ->multiple()
+                            ->required()
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
@@ -167,7 +175,8 @@ class UserResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->successNotificationTitle('User deleted successfully'),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -178,5 +187,10 @@ class UserResource extends Resource
         return [
             'index' => Pages\ManageUsers::route('/'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
     }
 }

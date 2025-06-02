@@ -37,7 +37,7 @@ class UserFactory extends Factory
             'email' => $this->faker->unique()->safeEmail(),
             'gender' => $this->faker->randomElement(['L', 'P']),
             'address' => $this->faker->address,
-            'phone' => $this->faker->unique()->numerify('08##########'),
+            'phone' => $this->faker->unique()->numerify('+628#########'),
             'image' => "user-images/{$imageName}",
             'email_verified_at' => now(),
             // 'password' => static::$password ??= Hash::make(str_repeat('1', $this->faker->numberBetween(1, 8))),

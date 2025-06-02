@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Super Admin',
                 'email' => 'superadmin@example.com',
                 'gender' => 'L',
-                'phone' => '08123456789',
+                'phone' => '+628123456789',
                 'address' => 'Jl. Merdeka No. 1',
                 'password' => '12345678',
                 'email_verified_at' => now(),

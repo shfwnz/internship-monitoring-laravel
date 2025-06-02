@@ -69,4 +69,9 @@ class BusinessFieldResource extends Resource
             'index' => Pages\ManageBusinessFields::route('/'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
 }

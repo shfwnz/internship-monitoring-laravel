@@ -24,17 +24,17 @@ return new class extends Migration {
                 ->foreign('student_id')
                 ->references('id')
                 ->on('students')
-                ->onDelete('cascade');
+                ->onDelete('restrict');
             $table
                 ->foreign('teacher_id')
                 ->references('id')
                 ->on('teachers')
-                ->onDelete('cascade');
+                ->onDelete('restrict');
             $table
                 ->foreign('industry_id')
                 ->references('id')
                 ->on('industries')
-                ->onDelete('cascade');
+                ->onDelete('restrict');
         });
     }
 
