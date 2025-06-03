@@ -29,7 +29,6 @@ class InternshipController extends Controller
             'industry.business_field',
         )->get();
 
-
         return response()->json(
             [
                 'success' => true,
@@ -42,7 +41,6 @@ class InternshipController extends Controller
 
     public function myInternship()
     {
-
         $user = Auth::user();
 
         if (!$user) {
@@ -221,7 +219,6 @@ class InternshipController extends Controller
      */
     public function show(string $id)
     {
-
         $internship = Internship::with(
             'student.user',
             'teacher.user',
@@ -244,11 +241,10 @@ class InternshipController extends Controller
     public function update(Request $request, string $id)
     {
         // Implementation for update method
-        
+
         $validator = Validator::make($request->all(), [
             'teacher_id' => 'nullable|integer|exists:teachers,id',
-            'industry_id' =>
-            'sometimes|required|integer|exists:industries,id',
+            'industry_id' => 'sometimes|required|integer|exists:industries,id',
             'start_date' => 'sometimes|required|date',
             'end_date' => 'sometimes|required|date|after:start_date',
             'file' => 'nullable|file|mimes:pdf|max:2048',
@@ -264,9 +260,9 @@ class InternshipController extends Controller
                 422,
             );
         }
-        
+
         DB::beginTransaction();
-        
+
         try {
             $internship = Internship::findOrFail($id);
 

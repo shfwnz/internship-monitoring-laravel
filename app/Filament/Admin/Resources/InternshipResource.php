@@ -81,8 +81,18 @@ class InternshipResource extends Resource
                         Forms\Components\DatePicker::make('end_date')
                             ->required()
                             ->afterOrEqual('start_date')
-                            ->minDate(fn (Forms\Get $get): ?string => 
-                                $get('start_date') ? date('Y-m-d', strtotime($get('start_date') . ' + 90 days')) : null),
+                            ->minDate(
+                                fn(Forms\Get $get): ?string => $get(
+                                    'start_date',
+                                )
+                                    ? date(
+                                        'Y-m-d',
+                                        strtotime(
+                                            $get('start_date') . ' + 90 days',
+                                        ),
+                                    )
+                                    : null,
+                            ),
                     ])
                     ->columns(2),
             ]),

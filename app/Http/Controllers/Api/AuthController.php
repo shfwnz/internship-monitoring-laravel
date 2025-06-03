@@ -123,12 +123,15 @@ class AuthController extends Controller
 
             // Find existing user
             $user = User::where('email', $request->email)->first();
-            
+
             if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User with this email not found',
-                ], 404);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'User with this email not found',
+                    ],
+                    404,
+                );
             }
 
             if ($request->role === 'student') {
@@ -142,10 +145,13 @@ class AuthController extends Controller
                     ]);
                 } else {
                     // Create new student if none exists
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Student with this NIS not found',
-                    ], 404);
+                    return response()->json(
+                        [
+                            'success' => false,
+                            'message' => 'Student with this NIS not found',
+                        ],
+                        404,
+                    );
                 }
 
                 // Update existing user
@@ -166,10 +172,13 @@ class AuthController extends Controller
                     // Add any fields that need to be updated
                 } else {
                     // Create new teacher if none exists
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Teacher with this NIP not found',
-                    ], 404);
+                    return response()->json(
+                        [
+                            'success' => false,
+                            'message' => 'Teacher with this NIP not found',
+                        ],
+                        404,
+                    );
                 }
 
                 // Update existing user

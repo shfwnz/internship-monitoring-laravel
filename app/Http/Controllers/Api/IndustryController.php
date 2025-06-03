@@ -21,9 +21,11 @@ class IndustryController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $industries = $user->hasPermissionTo('view_any_industry') 
+        $industries = $user->hasPermissionTo('view_any_industry')
             ? Industry::with('business_field')->get()
-            : Industry::with('business_field')->where('user_id', $user->id)->get();
+            : Industry::with('business_field')
+                ->where('user_id', $user->id)
+                ->get();
 
         return response()->json(
             [

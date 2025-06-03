@@ -80,8 +80,10 @@ class UserResource extends Resource
                             ->label('Role')
                             ->relationship('roles', 'name')
                             ->options(function () {
-                                return Role::where('guard_name', 'web')
-                                    ->pluck('name', 'id');
+                                return Role::where('guard_name', 'web')->pluck(
+                                    'name',
+                                    'id',
+                                );
                             })
                             ->multiple()
                             ->required()
@@ -181,8 +183,9 @@ class UserResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->successNotificationTitle('User deleted successfully'),
+                    Tables\Actions\DeleteBulkAction::make()->successNotificationTitle(
+                        'User deleted successfully',
+                    ),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

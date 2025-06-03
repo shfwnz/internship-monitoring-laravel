@@ -27,10 +27,7 @@ class UserFactory extends Factory
         $imageContent = file_get_contents('https://picsum.photos/300/300');
         $imageName = "user_{$this->faker->uuid()}.jpg";
 
-        Storage::disk('public')->put(
-            "user-images/{$imageName}",
-            $imageContent,
-        );
+        Storage::disk('public')->put("user-images/{$imageName}", $imageContent);
 
         return [
             'name' => $this->faker->name(),

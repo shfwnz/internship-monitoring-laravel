@@ -22,7 +22,7 @@ class StudentController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $students = $user->hasPermissionTo('view_any_student') 
+        $students = $user->hasPermissionTo('view_any_student')
             ? Student::with('user')->get()
             : Student::with('user')->where('user_id', $user->id)->get();
 

@@ -38,7 +38,11 @@ class IndustryResource extends Resource
                             ->maxLength(255),
                         Forms\Components\TextInput::make('email')
                             ->email()
-                            ->unique(Industry::class, 'email', ignoreRecord: true)
+                            ->unique(
+                                Industry::class,
+                                'email',
+                                ignoreRecord: true,
+                            )
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('phone')
@@ -46,7 +50,11 @@ class IndustryResource extends Resource
                             ->required()
                             ->maxLength(15)
                             ->tel()
-                            ->unique(Industry::class, 'phone', ignoreRecord: true)
+                            ->unique(
+                                Industry::class,
+                                'phone',
+                                ignoreRecord: true,
+                            )
                             ->prefix('+62')
                             ->regex('/^\+62[8][0-9]{8,11}$/')
                             ->helperText('Format: +628xxxxxxxxxx'),
@@ -109,31 +117,30 @@ class IndustryResource extends Resource
                     ->preload(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->using(function (
-                    Model $record,
-                    array $data,
-                ): Model {
-                    return app(
-                        IndustryResource\Pages\ManageIndustries::class,
-                    )->handleRecordUpdate($record, $data);
-                }),
-                Tables\Actions\DeleteAction::make()->using(function (
-                    Model $record,
-                ): void {
-                    app(
-                        IndustryResource\Pages\ManageIndustries::class,
-                    )->handleRecordDeletion($record);
-                }),
+                Tables\Actions\EditAction::make()->successNotificationTitle(
+                    'Industry updated sucessfully',
+                ),
+                Tables\Actions\DeleteAction::make()
+                    ->successNotificationTitle('Industry deleted successfully')
+                    ->hidden(
+                        fn(Industry $record): bool => $record
+                            ->internships()
+                            ->exists(),
+                    ),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->successNotificationTitle('Industry deleted successfully')
+                        ->successNotificationTitle(
+                            'Industry deleted successfully',
+                        )
                         ->using(function (Collection $record): void {
                             foreach ($record as $industry) {
                                 if ($industry->internships()->exists()) {
                                     Notification::make()
-                                        ->title("Cannot delete {$industry->name} with active internship records.")
+                                        ->title(
+                                            "Cannot delete {$industry->name} with active internship records.",
+                                        )
                                         ->danger()
                                         ->send();
                                     continue;

@@ -46,7 +46,11 @@ class TeacherResource extends Resource
                                     ->label('Email')
                                     ->email()
                                     ->required()
-                                    ->unique(User::class, 'email', ignoreRecord: true)
+                                    ->unique(
+                                        User::class,
+                                        'email',
+                                        ignoreRecord: true,
+                                    )
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('phone')
                                     ->label('Phone')
@@ -55,7 +59,11 @@ class TeacherResource extends Resource
                                     ->tel()
                                     ->prefix('+62')
                                     ->regex('/^\+62[8][0-9]{8,11}$/')
-                                    ->unique(User::class, 'phone', ignoreRecord: true)
+                                    ->unique(
+                                        User::class,
+                                        'phone',
+                                        ignoreRecord: true,
+                                    )
                                     ->helperText('Format: +628xxxxxxxxxx'),
                                 Forms\Components\Select::make('gender')
                                     ->label('Gender')
@@ -74,8 +82,9 @@ class TeacherResource extends Resource
                                     ->label('Password')
                                     ->password()
                                     ->required(
-                                        fn(string $context): bool => $context ===
-                                            'create',
+                                        fn(
+                                            string $context,
+                                        ): bool => $context === 'create',
                                     )
                                     ->dehydrated(fn($state) => filled($state))
                                     ->maxLength(255)
@@ -177,8 +186,16 @@ class TeacherResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->successNotificationTitle('Teacher updated successfully'),
-                Tables\Actions\DeleteAction::make()->successNotificationTitle('Teacher deleted successfully')
+                Tables\Actions\EditAction::make()->successNotificationTitle(
+                    'Teacher updated successfully',
+                ),
+                Tables\Actions\DeleteAction::make()
+                    ->successNotificationTitle('Teacher deleted successfully')
+                    ->hidden(
+                        fn(Teacher $record): bool => $record
+                            ->internships()
+                            ->exists(),
+                    )
                     ->after(function (Model $record): void {
                         $record->user->delete();
                     }),
@@ -186,12 +203,18 @@ class TeacherResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->successNotificationTitle('Teacher deleted successfully')
+                        ->successNotificationTitle(
+                            'Teacher deleted successfully',
+                        )
                         ->using(function (Collection $record): void {
                             foreach ($record as $teacher) {
                                 if ($teacher->internships()->exists()) {
                                     Notification::make()
-                                        ->title('Cannot delete ' . $teacher->user->name . ' with active internship records.')
+                                        ->title(
+                                            'Cannot delete ' .
+                                                $teacher->user->name .
+                                                ' with active internship records.',
+                                        )
                                         ->danger()
                                         ->send();
                                     continue;

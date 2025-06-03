@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 // Model
 use App\Models\BusinessField;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Collection;
 
 class BusinessFieldResource extends Resource
 {
@@ -53,11 +55,34 @@ class BusinessFieldResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->successNotificationTitle('Field deleted successfully')
+                    ->hidden(
+                        fn(BusinessField $record): bool => $record
+                            ->industries()
+                            ->exists(),
+                    ),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->successNotificationTitle(
+                            'Business Field deleted sucessfully',
+                        )
+                        ->using(function (Collection $record): void {
+                            foreach ($record as $field) {
+                                if ($field->industries()->exists()) {
+                                    Notification::make()
+                                        ->title(
+                                            "Cannot delete {$field->name} with active internship records.",
+                                        )
+                                        ->danger()
+                                        ->send();
+                                    continue;
+                                }
+                                $field->delete();
+                            }
+                        }),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

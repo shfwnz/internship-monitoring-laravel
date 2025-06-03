@@ -47,7 +47,11 @@ class StudentResource extends Resource
                                 Forms\Components\TextInput::make('email')
                                     ->label('Email')
                                     ->email()
-                                    ->unique(User::class, 'email', ignoreRecord: true)
+                                    ->unique(
+                                        User::class,
+                                        'email',
+                                        ignoreRecord: true,
+                                    )
                                     ->required()
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('phone')
@@ -55,7 +59,11 @@ class StudentResource extends Resource
                                     ->required()
                                     ->maxLength(15)
                                     ->tel()
-                                    ->unique(User::class, 'phone', ignoreRecord: true)
+                                    ->unique(
+                                        User::class,
+                                        'phone',
+                                        ignoreRecord: true,
+                                    )
                                     ->prefix('+62')
                                     ->regex('/^\+62[8][0-9]{8,11}$/')
                                     ->helperText('Format: +628xxxxxxxxxx'),
@@ -76,15 +84,17 @@ class StudentResource extends Resource
                                     ->label('Password')
                                     ->password()
                                     ->required(
-                                        fn(string $context): bool => $context ===
-                                            'create',
+                                        fn(
+                                            string $context,
+                                        ): bool => $context === 'create',
                                     )
                                     ->dehydrated(fn($state) => filled($state))
                                     ->maxLength(255)
                                     ->columnSpanFull(),
                             ])
                             ->columns(2),
-                    ])->columnSpanFull(),
+                    ])
+                    ->columnSpanFull(),
 
                 Wizard\Step::make('Student Information')
                     ->icon('heroicon-o-user-group')
@@ -106,8 +116,7 @@ class StudentResource extends Resource
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),
-            ])
-                ->columnSpanFull(),
+            ])->columnSpanFull(),
         ]);
     }
 
@@ -192,11 +201,14 @@ class StudentResource extends Resource
             ])
             ->actions([
                 // Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()->successNotificationTitle('Student updated successfully'),
+                Tables\Actions\EditAction::make()->successNotificationTitle(
+                    'Student updated successfully',
+                ),
                 Tables\Actions\DeleteAction::make()
                     ->successNotificationTitle('Student deleted successfully')
-                    ->hidden(fn (Student $record): bool => 
-                        $record->status || $record->internships()->exists()
+                    ->hidden(
+                        fn(Student $record): bool => $record->status ||
+                            $record->internships()->exists(),
                     )
                     ->after(function (Model $record): void {
                         $record->user->delete();
@@ -205,19 +217,24 @@ class StudentResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->successNotificationTitle('Student deleted successfully')
+                        ->successNotificationTitle(
+                            'Student deleted successfully',
+                        )
                         ->using(function (Collection $record): void {
                             foreach ($record as $student) {
                                 if ($student->internships()->exists()) {
                                     Notification::make()
-                                        ->title('Cannot delete ' . $student->user->name . ' with active internship records.')
+                                        ->title(
+                                            'Cannot delete ' .
+                                                $student->user->name .
+                                                ' with active internship records.',
+                                        )
                                         ->danger()
                                         ->send();
                                     continue;
                                 }
                                 $student->delete();
                                 $student->user->delete();
-                                
                             }
                         }),
                 ]),

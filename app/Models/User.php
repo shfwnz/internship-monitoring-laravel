@@ -89,12 +89,13 @@ class User extends Authenticatable implements JWTSubject
 
     public function assignRoleWithGuard($roleName)
     {
-        $guardName = $this->getUserTypeAttribute() === 'super_admin' ? 'web' : 'api';
-        
+        $guardName =
+            $this->getUserTypeAttribute() === 'super_admin' ? 'web' : 'api';
+
         $role = \Spatie\Permission\Models\Role::where('name', $roleName)
             ->where('guard_name', $guardName)
             ->first();
-            
+
         if ($role) {
             $this->assignRole($role);
         }
@@ -102,7 +103,8 @@ class User extends Authenticatable implements JWTSubject
 
     public function hasRoleWithGuard($roleName)
     {
-        $guardName = $this->getUserTypeAttribute() === 'super_admin' ? 'web' : 'api';
+        $guardName =
+            $this->getUserTypeAttribute() === 'super_admin' ? 'web' : 'api';
         return $this->hasRole($roleName, $guardName);
     }
 }
