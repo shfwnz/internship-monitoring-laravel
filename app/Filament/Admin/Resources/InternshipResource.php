@@ -138,21 +138,8 @@ class InternshipResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->using(function (
-                    Model $record,
-                    array $data,
-                ): Model {
-                    return app(
-                        InternshipResource\Pages\ManageInternships::class,
-                    )->handleRecordUpdate($record, $data);
-                }),
-                Tables\Actions\DeleteAction::make()->using(function (
-                    Model $record,
-                ): void {
-                    app(
-                        InternshipResource\Pages\ManageInternships::class,
-                    )->handleRecordDeletion($record);
-                }),
+                Tables\Actions\EditAction::make()->successNotificationTitle('Internship updated sucessfully'),
+                Tables\Actions\DeleteAction::make()->successNotificationTitle('Internship deleted sucessfully'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
