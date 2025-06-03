@@ -47,6 +47,7 @@ class StudentResource extends Resource
                                 Forms\Components\TextInput::make('email')
                                     ->label('Email')
                                     ->email()
+                                    ->unique(User::class, 'email', ignoreRecord: true)
                                     ->required()
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('phone')
@@ -54,6 +55,7 @@ class StudentResource extends Resource
                                     ->required()
                                     ->maxLength(15)
                                     ->tel()
+                                    ->unique(User::class, 'phone', ignoreRecord: true)
                                     ->prefix('+62')
                                     ->regex('/^\+62[8][0-9]{8,11}$/')
                                     ->helperText('Format: +628xxxxxxxxxx'),
@@ -93,7 +95,6 @@ class StudentResource extends Resource
                                 Forms\Components\FileUpload::make('image')
                                     ->label('Image')
                                     ->image()
-                                    ->required()
                                     ->directory('student-images')
                                     ->columnSpanFull(),
                             ]),
@@ -194,6 +195,9 @@ class StudentResource extends Resource
                 Tables\Actions\EditAction::make()->successNotificationTitle('Student updated successfully'),
                 Tables\Actions\DeleteAction::make()
                     ->successNotificationTitle('Student deleted successfully')
+                    ->hidden(fn (Student $record): bool => 
+                        $record->status || $record->internships()->exists()
+                    )
                     ->after(function (Model $record): void {
                         $record->user->delete();
                     }),

@@ -46,6 +46,7 @@ class TeacherResource extends Resource
                                     ->label('Email')
                                     ->email()
                                     ->required()
+                                    ->unique(User::class, 'email', ignoreRecord: true)
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('phone')
                                     ->label('Phone')
@@ -54,6 +55,7 @@ class TeacherResource extends Resource
                                     ->tel()
                                     ->prefix('+62')
                                     ->regex('/^\+62[8][0-9]{8,11}$/')
+                                    ->unique(User::class, 'phone', ignoreRecord: true)
                                     ->helperText('Format: +628xxxxxxxxxx'),
                                 Forms\Components\Select::make('gender')
                                     ->label('Gender')

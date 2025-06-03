@@ -38,6 +38,7 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
                             ->email()
+                            ->unique(User::class, 'email', ignoreRecord: true)
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('phone')
@@ -47,6 +48,7 @@ class UserResource extends Resource
                             ->tel()
                             ->prefix('+62')
                             ->regex('/^\+62[8][0-9]{8,11}$/')
+                            ->unique(User::class, 'phone', ignoreRecord: true)
                             ->helperText('Format: +628xxxxxxxxxx'),
                         Forms\Components\Select::make('gender')
                             ->label('Gender')
@@ -76,7 +78,11 @@ class UserResource extends Resource
                             ->columnSpanFull(),
                         Forms\Components\Select::make('roles')
                             ->label('Role')
-                            ->options(Role::all()->pluck('name', 'name'))
+                            ->relationship('roles', 'name')
+                            ->options(function () {
+                                return Role::where('guard_name', 'web')
+                                    ->pluck('name', 'id');
+                            })
                             ->multiple()
                             ->required()
                             ->columnSpanFull(),

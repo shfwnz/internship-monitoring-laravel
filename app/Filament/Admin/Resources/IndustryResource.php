@@ -38,12 +38,18 @@ class IndustryResource extends Resource
                             ->maxLength(255),
                         Forms\Components\TextInput::make('email')
                             ->email()
+                            ->unique(Industry::class, 'email', ignoreRecord: true)
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('phone')
-                            ->tel()
+                            ->label('Phone')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(15)
+                            ->tel()
+                            ->unique(Industry::class, 'phone', ignoreRecord: true)
+                            ->prefix('+62')
+                            ->regex('/^\+62[8][0-9]{8,11}$/')
+                            ->helperText('Format: +628xxxxxxxxxx'),
                         Forms\Components\TextInput::make('website')
                             ->label('Website')
                             ->url()
