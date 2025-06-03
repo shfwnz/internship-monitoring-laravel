@@ -1,61 +1,196 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SimPKL - Internship Monitoring System
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="200" alt="Laravel Logo">
 </p>
 
-## About Laravel
+SimPKL is a comprehensive internship monitoring system built with Laravel and Filament for the backend/admin panel, and Vue.js for the frontend interface. This system helps educational institutions manage and monitor student internships with role-based permissions and real-time tracking capabilities.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Role-Based Access Control**: Multi-level user management with permissions
+- **Student Management**: Track student internship status and details
+- **Industry Partnership**: Manage industry partners and their business fields
+- **Teacher Supervision**: Assign teachers to supervise student internships
+- **Real-time Monitoring**: Track internship progress and documentation
+- **API Integration**: RESTful API for frontend integration
+- **File Management**: Handle internship documentation and reports
+- **Database Triggers**: Automatic student status updates
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Tech Stack
 
-## Learning Laravel
+### Backend
+- **Laravel** - PHP web application framework
+- **Filament** - Admin panel and dashboard
+- **Spatie Laravel Permission** - Role and permission management
+- **Laravel Sanctum** - API authentication
+- **MySQL** - Database management
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Frontend
+- **Vue.js** - Progressive JavaScript framework
+- **Repository**: [Internship Monitoring Vue](https://github.com/shfwnz/internship-monitoring-vue.git)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Database Schema
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+The system includes the following main entities:
+- **Users**: System users with polymorphic role relationships
+- **Students**: Student information with internship status
+- **Teachers**: Teacher information and supervision assignments
+- **Industries**: Industry partners with business field categorization
+- **Internships**: Core internship records with relationships
+- **Business Fields**: Industry categorization
 
-## Laravel Sponsors
+## Prerequisites
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- PHP >= 8.1
+- Composer
+- Node.js & NPM
+- MySQL/MariaDB
+- Git
 
-### Premium Partners
+## Installation
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development/)**
-- **[Active Logic](https://activelogic.com)**
+### Backend Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/shfwnz/internship-monitoring-laravel.git backend
+   cd backend
+   ```
+
+2. **Install PHP dependencies**
+   ```bash
+   composer install
+   ```
+
+3. **Environment configuration**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Update your `.env` file with database credentials and other configuration:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=simpkl
+   DB_USERNAME=your_username
+   DB_PASSWORD=your_password
+   ```
+
+4. **Generate application key**
+   ```bash
+   php artisan key:generate
+   ```
+
+5. **Generate JWT secret** (if using JWT authentication)
+   ```bash
+   php artisan jwt:secret
+   ```
+
+6. **Run database migrations**
+   ```bash
+   php artisan migrate --seed
+   ```
+
+7. **Install Filament Shield for permissions**
+   ```bash
+   php artisan shield:install admin
+   php artisan shield:generate --all
+   ```
+
+8. **Start the development server**
+    ```bash
+    php artisan serve --host=0.0.0.0 --port=8000
+    ```
+
+### Frontend Setup
+
+1. **Clone the Vue.js frontend repository**
+   ```bash
+   git clone https://github.com/shfwnz/internship-monitoring-vue.git frontend
+   cd frontend
+   ```
+
+2. **Install Node.js dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure API endpoint**
+   Update the API base URL in your Vue.js configuration to point to your Laravel backend.
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+## Usage
+
+### Admin Panel Access
+- Navigate to `ip_addr:8000/admin` to access the Filament admin panel
+- Login with the `superadmin@exmaple.com` and password `12345678`
+- Manage users, students, teachers, industries, and internships
+
+### API Endpoints
+The system provides RESTful API endpoints for:
+- User authentication and authorization
+- Student management
+- Internship tracking
+- Industry and teacher management
+- File uploads and document management
+
+### Frontend Interface
+- Access the Vue.js frontend for student and teacher interfaces
+- Real-time internship monitoring and status updates
+- Document submission and progress tracking
+
+## Database Triggers
+
+The system includes automatic triggers that:
+- Set student status to `true` when an internship is created
+- Set student status to `false` when an internship is deleted
+
+## Role-Based Permissions
+
+The system supports multiple user roles:
+- **Super Admin**: Full system access
+- **Teacher**: Student supervision and monitoring
+- **Student**: Personal internship management
+- **Custom**: Custom role name and permission
+
+## File Structure
+
+```
+├── app/
+│   ├── Http/Controllers/     # API Controllers
+│   ├── Models/              # Eloquent Models
+│   └── Filament/           # Filament Resources
+├── database/
+│   ├── migrations/         # Database Migrations
+│   └── seeders/           # Database Seeders
+├── routes/
+│   ├── api.php            # API Routes
+│   └── web.php            # Web Routes
+└── README.md
+```
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## Code of Conduct
+## Related Repositories
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **Frontend (Vue.js)**: [Internship Monitoring Vue](https://github.com/shfwnz/internship-monitoring-vue.git)
 
-## Security Vulnerabilities
+## Support
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+For support and questions, please open an issue in the repository or contact the development team.
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+**SimPKL** - Simplifying internship monitoring for educational institutions.
