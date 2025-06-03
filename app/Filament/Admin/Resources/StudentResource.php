@@ -217,6 +217,7 @@ class StudentResource extends Resource
                                 }
                                 $student->delete();
                                 $student->user->delete();
+                                
                             }
                         }),
                 ]),
