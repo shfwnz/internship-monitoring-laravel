@@ -118,76 +118,28 @@ class AuthController extends Controller
         try {
             $userData = [
                 'name' => $request->name,
+                'email' => $request->email,
                 'password' => Hash::make($request->password),
+                'gender' => null,
+                'phone' => null,
+                'address' => null,
             ];
 
-            // Find existing user
-            $user = User::where('email', $request->email)->first();
-
-            if (!$user) {
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'User with this email not found',
-                    ],
-                    404,
-                );
-            }
-
             if ($request->role === 'student') {
-                // Try to find existing student with this NIS
-                $student = Student::where('nis', $request->nis)->first();
-
-                if ($student) {
-                    // Update existing student
-                    $student->update([
-                        'status' => false,
-                    ]);
-                } else {
-                    // Create new student if none exists
-                    return response()->json(
-                        [
-                            'success' => false,
-                            'message' => 'Student with this NIS not found',
-                        ],
-                        404,
-                    );
-                }
-
-                // Update existing user
-                $user->update([
-                    'name' => $request->name,
-                    'password' => Hash::make($request->password),
-                    'userable_id' => $student->id,
-                    'userable_type' => Student::class,
+                $student = Student::create([
+                    'nis' => $request->nis,
+                    'status' => false,
                 ]);
+
+                $user = $student->user()->create($userData);
                 $user->assignRoleWithGuard('student');
                 $profileId = $student->id;
             } else {
-                // Try to find existing teacher with this NIP
-                $teacher = Teacher::where('nip', $request->nip)->first();
-
-                if ($teacher) {
-                    // Update existing teacher if needed
-                    // Add any fields that need to be updated
-                } else {
-                    // Create new teacher if none exists
-                    return response()->json(
-                        [
-                            'success' => false,
-                            'message' => 'Teacher with this NIP not found',
-                        ],
-                        404,
-                    );
-                }
-
-                // Update existing user
-                $user->update([
-                    'name' => $request->name,
-                    'password' => Hash::make($request->password),
-                    'userable_id' => $teacher->id,
-                    'userable_type' => Teacher::class,
+                $teacher = Teacher::create([
+                    'nip' => $request->nip,
                 ]);
+
+                $user = $teacher->user()->create($userData);
                 $user->assignRoleWithGuard('teacher');
                 $profileId = $teacher->id;
             }

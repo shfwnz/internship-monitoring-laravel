@@ -138,8 +138,12 @@ class InternshipResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->successNotificationTitle('Internship updated sucessfully'),
-                Tables\Actions\DeleteAction::make()->successNotificationTitle('Internship deleted sucessfully'),
+                Tables\Actions\EditAction::make()->successNotificationTitle(
+                    'Internship updated sucessfully',
+                ),
+                Tables\Actions\DeleteAction::make()->successNotificationTitle(
+                    'Internship deleted sucessfully',
+                ),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
